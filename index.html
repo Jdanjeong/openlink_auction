@@ -737,7 +737,7 @@ async function renderVendorDirect(vendorId) {
   document.getElementById('vendorHeaderInfo').textContent = `${vendor?.NAME || vendorId}님 · 입찰 목록`;
 
   const auctions = await getAuctions();
-  const myAuctions = auctions.filter(a => (a.VENDORS||'').split(',').includes(vendorId) && a.STATUS === 'ongoing');
+  const myAuctions = auctions.filter(a => parseVendors(a.VENDORS).includes(vendorId) && a.STATUS === 'ongoing');
   const myBids = await getMyBids(vendorId);
 
   const el = document.getElementById('bidBody');
@@ -1714,7 +1714,7 @@ function mockCloseAuction(aid) {
 }
 
 function copyBidLink(auctionId) {
-  const vendors = (MOCK_AUCTIONS.find(a=>a.ID===auctionId)?.VENDORS||'').split(',').filter(Boolean);
+  const auc = (await getAuctions()).find(a=>a.ID===auctionId); const vendors = parseVendors(auc?.VENDORS);
   if (!vendors.length) { toast('발송 업체가 없습니다.', 'err'); return; }
   const token = btoa(vendors[0] + '|' + auctionId).replace(/\+/g,'_').replace(/\//g,'-').replace(/=/g,'');
   const url = `${HOSTING_URL}?token=${token}`;
@@ -1775,6 +1775,9 @@ function renderViewer() {
   const photo = viewerPhotos[viewerIdx];
   img.style.opacity = '0';
   img.src = photo.url || photo;
+  img.onclick = () => { if (photo.viewUrl) window.open(photo.viewUrl, '_blank'); };
+  img.title = '클릭하면 원본 보기';
+  img.style.cursor = 'pointer';
   img.onload = () => { img.style.opacity = '1'; };
   document.getElementById('viewerName').textContent = photo.name || '';
   document.getElementById('viewerCounter').textContent = `${viewerIdx+1} / ${viewerPhotos.length}`;
@@ -1793,8 +1796,21 @@ function viewerNext() {
 // 사진 URL 목록 파싱 (쉼표 구분 문자열 또는 배열)
 function parsePhotoUrls(photosVal) {
   if (!photosVal) return [];
-  if (Array.isArray(photosVal)) return photosVal.filter(Boolean).map(u => ({url:u, name:u.split('/').pop()}));
-  return String(photosVal).split(',').filter(Boolean).map(u => ({url:u.trim(), name:u.trim().split('/').pop()}));
+  const urls = Array.isArray(photosVal)
+    ? photosVal.filter(Boolean)
+    : String(photosVal).split(',').filter(Boolean).map(u => u.trim());
+  return urls.map(u => {
+    // Drive URL에서 파일 ID 추출 후 thumbnail URL로 변환 (CORS 우회)
+    const idMatch = u.match(/\/d\/([a-zA-Z0-9_-]+)/) || u.match(/id=([a-zA-Z0-9_-]+)/);
+    const fileId = idMatch ? idMatch[1] : null;
+    const thumbUrl = fileId
+      ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`
+      : u;
+    const viewUrl = fileId
+      ? `https://drive.google.com/file/d/${fileId}/view`
+      : u;
+    return { url: thumbUrl, viewUrl, name: u.split('/').pop(), fileId };
+  });
 }
 
 function parseDocUrls(docsVal) {

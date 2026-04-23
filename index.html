@@ -9,11 +9,11 @@
 :root {
   --font-base:'Pretendard Variable','Noto Sans KR',-apple-system,sans-serif;
   --font-mono:'JetBrains Mono','Fira Code',monospace;
-  --fs-h1:22px; --fs-h2:17px; --fs-h3:14px;
-  --fs-body:13px; --fs-sm:12px; --fs-xs:11px;
+  --fs-h1:24px; --fs-h2:18px; --fs-h3:15px;
+  --fs-body:14px; --fs-sm:13px; --fs-xs:12px;
   --space-2:8px; --space-3:16px; --space-4:24px; --space-5:48px;
-  --h-row-sm:32px; --h-row:38px; --h-btn-lg:46px; --h-header:52px;
-  --w-sidebar:230px;
+  --h-row-sm:32px; --h-row:38px; --h-btn-lg:46px; --h-header:56px;
+  --w-sidebar:240px;
   --radius-sm:4px; --radius:6px; --radius-md:10px; --radius-full:999px;
   --color-bg:#FFFFFF; --color-s1:#F4F7FF; --color-s2:#E4EAFF;
   --color-s3a:#EEF2FF; --color-s3b:#F0FBF8;
@@ -73,10 +73,10 @@ a{text-decoration:none;color:inherit;}
 .mn{grid-area:mn;background:var(--color-s1);overflow-y:auto;display:flex;flex-direction:column;height:calc(100vh - var(--h-header));}
 
 /* ── 헤더 ── */
-.hd-brand{background:var(--color-p);display:flex;align-items:center;padding:0 16px;gap:8px;min-width:0;}
-.hd-logo{height:22px;object-fit:contain;filter:brightness(0) invert(1);}
+.hd-brand{background:var(--color-p);display:flex;align-items:center;padding:0 20px;gap:10px;}
+.hd-logo{height:26px;object-fit:contain;filter:brightness(0) invert(1);}
 .hd-div{width:1px;height:16px;background:rgba(255,255,255,.25);flex-shrink:0;}
-.hd-sysname{font-size:10px;color:rgba(255,255,255,.75);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hd-sysname{font-size:12px;color:rgba(255,255,255,.75);font-weight:500;white-space:nowrap;}
 .hd-right{background:var(--color-bg);display:flex;align-items:center;justify-content:space-between;padding:0 18px;min-width:0;}
 .hd-title{font-size:var(--fs-sm);color:var(--text-s);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .hd-acts{display:flex;align-items:center;gap:8px;flex-shrink:0;}
@@ -412,6 +412,7 @@ a{text-decoration:none;color:inherit;}
             <div class="content-pad" style="max-width:700px">
               <div class="sec-label">차량 정보</div>
               <div class="form-grid">
+                <div class="ff"><label>차량 소유주</label><input type="text" id="f-carowner" placeholder="예) 우리금융캐피탈"></div>
                 <div class="ff"><label>차량번호 *</label><input type="text" id="f-carno" placeholder="예) 169하5045"></div>
                 <div class="ff"><label>차종 *</label><input type="text" id="f-carname" placeholder="예) 쏘렌토"></div>
                 <div class="ff"><label>연식</label><input type="text" id="f-year" placeholder="예) 2021년식"></div>
@@ -422,15 +423,15 @@ a{text-decoration:none;color:inherit;}
               </div>
               <div class="sec-label">손해 정보</div>
               <div class="form-grid">
-                <div class="ff"><label>손해배상액 (원)</label><input type="text" id="f-damage" placeholder="예) 17,580,036"></div>
-                <div class="ff"><label>손해평가 기관</label><input type="text" id="f-evalorg" placeholder="예) 카옥스"></div>
+                <div class="ff"><label>수리 견적액 (원)</label><input type="text" id="f-damage" placeholder="예) 31,028,216"></div>
+                <div class="ff"><label>견적업체</label><input type="text" id="f-evalorg" placeholder="예) 세창종합정비"></div>
               </div>
               <div class="sec-label">파일 첨부</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
                 <div>
-                  <div style="font-size:var(--fs-xs);font-weight:700;color:var(--text-m);margin-bottom:6px">📷 차량 사진</div>
+                  <div style="font-size:var(--fs-xs);font-weight:700;color:var(--text-m);margin-bottom:6px">[사진] 차량 사진</div>
                   <div class="upload-zone" onclick="document.getElementById('filePhoto').click()" ondragover="handleDrag(event,'photo',true)" ondragleave="handleDrag(event,'photo',false)" ondrop="handleDrop(event,'photo')">
-                    <div class="upload-zone-icon">🚗</div>
+                    <div class="upload-zone-icon">[차량]</div>
                     <div class="upload-zone-title">사진 업로드</div>
                     <div class="upload-zone-sub">JPG, PNG</div>
                     <input type="file" id="filePhoto" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files,'photo')">
@@ -438,12 +439,12 @@ a{text-decoration:none;color:inherit;}
                   <div class="upload-files" id="photoList"></div>
                 </div>
                 <div>
-                  <div style="font-size:var(--fs-xs);font-weight:700;color:var(--text-m);margin-bottom:6px">📄 수리비 견적서</div>
+                  <div style="font-size:var(--fs-xs);font-weight:700;color:var(--text-m);margin-bottom:6px">[문서] 수리비 견적서</div>
                   <div class="upload-zone" onclick="document.getElementById('fileDoc').click()" ondragover="handleDrag(event,'doc',true)" ondragleave="handleDrag(event,'doc',false)" ondrop="handleDrop(event,'doc')">
-                    <div class="upload-zone-icon">📋</div>
+                    <div class="upload-zone-icon">[서류]</div>
                     <div class="upload-zone-title">견적서 업로드</div>
-                    <div class="upload-zone-sub">PDF, JPG, PNG</div>
-                    <input type="file" id="fileDoc" multiple accept=".pdf,image/*" style="display:none" onchange="handleFiles(this.files,'doc')">
+                    <div class="upload-zone-sub">PDF 업로드 시 차량정보 자동 입력</div>
+                    <input type="file" id="fileDoc" multiple accept=".pdf,image/*" style="display:none" onchange="handleFilesWithParse(this.files)">
                   </div>
                   <div class="upload-files" id="docList"></div>
                 </div>
@@ -528,6 +529,7 @@ a{text-decoration:none;color:inherit;}
         onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
       <div style="display:none;font-size:14px;font-weight:800;color:#fff">오픈링크</div>
       <span class="bid-header-user" id="vendorHeaderInfo"></span>
+      <button class="hd__btn" style="color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.1);height:30px;padding:0 12px;font-size:12px;font-weight:700;border-radius:4px;cursor:pointer" onclick="showResultPage()">낙찰 결과 확인</button>
     </div>
     <div class="bid-body" id="bidBody"></div>
   </div>
@@ -544,7 +546,7 @@ a{text-decoration:none;color:inherit;}
   <div class="modal">
     <h3>업체 추가</h3>
     <div class="modal-sub">신규 매각업체 계정을 등록합니다</div>
-    <div class="ff"><label>업체명 *</label><input type="text" id="mv-name" placeholder="예) 카옥스"></div>
+    <div class="ff"><label>업체명 *</label><input type="text" id="mv-name" placeholder="예) 세창종합정비"></div>
     <div class="ff"><label>아이디 *</label><input type="text" id="mv-id" placeholder="로그인 아이디"></div>
     <div class="ff"><label>초기 비밀번호 *</label><input type="text" id="mv-pw" placeholder="초기 비밀번호"></div>
     <div class="ff"><label>담당자명</label><input type="text" id="mv-contact" placeholder="담당자 이름"></div>
@@ -729,7 +731,7 @@ async function renderVendorDirect(vendorId) {
       return `<div class="bid-card" style="margin-bottom:14px;cursor:pointer" onclick="renderVendorBidPage('${vendorId}','${a.ID}')">
         <div class="bid-card-head">
           <div style="display:flex;align-items:center;gap:7px"><span class="plate">${a.CARNO}</span><span>${a.CARNAME} · ${a.YEAR||''}</span></div>
-          <span style="color:var(--color-err);font-size:var(--fs-xs);font-weight:700">⏱ ${hh}h ${mm}m 남음</span>
+          <span style="color:var(--color-err);font-size:var(--fs-xs);font-weight:700">[시간] ${hh}h ${mm}m 남음</span>
         </div>
         <div class="bid-card-body" style="font-size:var(--fs-sm);color:var(--text-s)">
           ${alreadyBid ? '<span class="badge badge-ok">✓ 투찰 완료</span>' : '<span class="badge badge-warn">투찰 대기</span>'}
@@ -787,7 +789,7 @@ async function renderVendorBidPage(vendorId, auctionId) {
             <div class="veh-item"><label>마감일시</label><value style="font-family:var(--font-mono)">${(auction.DEADLINE||'').replace('T',' ')}</value></div>
           </div>
           ${auction.NOTE ? `<div style="padding:9px 11px;background:var(--color-s1);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--text-s);line-height:1.7">${auction.NOTE}</div>` : ''}
-          ${!isClosed ? `<div style="margin-top:10px;padding:8px 12px;background:var(--color-warnbg);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:#92400E;font-weight:600">⏱ 마감까지 ${hh}시간 ${mm}분 남았습니다</div>` : ''}
+          ${!isClosed ? `<div style="margin-top:10px;padding:8px 12px;background:var(--color-warnbg);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:#92400E;font-weight:600">[시간] 마감까지 ${hh}시간 ${mm}분 남았습니다</div>` : ''}
         </div>
       </div>
 
@@ -802,20 +804,20 @@ async function renderVendorBidPage(vendorId, auctionId) {
             const photosJson = JSON.stringify(photos).replace(/'/g,"\\'");
             let html = '';
             if (photos.length) {
-              html += `<div style="margin-bottom:6px;font-size:var(--fs-xs);font-weight:700;color:var(--text-m)">📷 차량 사진 (${photos.length}장) — 클릭하여 확대</div>`;
+              html += `<div style="margin-bottom:6px;font-size:var(--fs-xs);font-weight:700;color:var(--text-m)">[사진] 차량 사진 (${photos.length}장) — 클릭하여 확대</div>`;
               html += `<div class="photo-thumb-grid">`;
               photos.forEach((p,i) => {
                 html += `<div class="photo-thumb" onclick="openPhotoViewer(${photosJson},${i})">
-                  <img src="${p.url}" alt="${p.name}" onerror="this.parentElement.innerHTML='<div class=\\'photo-thumb-placeholder\\'>🚗</div>'">
-                  <div class="photo-thumb-overlay">🔍</div>
+                  <img src="${p.url}" alt="${p.name}" onerror="this.parentElement.innerHTML='<div class=\\'photo-thumb-placeholder\\'>[차량]</div>'">
+                  <div class="photo-thumb-overlay">[확대]</div>
                 </div>`;
               });
               html += '</div>';
             }
             if (docs.length) {
-              html += `<div style="margin-top:10px;margin-bottom:6px;font-size:var(--fs-xs);font-weight:700;color:var(--text-m)">📄 수리비 견적서</div>`;
+              html += `<div style="margin-top:10px;margin-bottom:6px;font-size:var(--fs-xs);font-weight:700;color:var(--text-m)">[문서] 수리비 견적서</div>`;
               docs.forEach((d,i) => {
-                html += `<a class="doc-link-item" href="${d}" target="_blank" rel="noopener">📄 견적서 ${i+1} 열기 →</a>`;
+                html += `<a class="doc-link-item" href="${d}" target="_blank" rel="noopener">[문서] 견적서 ${i+1} 열기 →</a>`;
               });
             }
             return html;
@@ -883,7 +885,7 @@ async function renderVendorBidPage(vendorId, auctionId) {
 
           <!-- 4. 입찰 금액 -->
           <div class="sec-label">입찰 금액 (VAT 포함)</div>
-          <div class="agree-box">⚠ 금액 제출 후 수정이 불가합니다. 신중하게 입력하세요.</div>
+          <div class="agree-box">[주의] 금액 제출 후 수정이 불가합니다. 신중하게 입력하세요.</div>
           <div class="amount-wrap" style="margin-bottom:6px">
             <input type="number" id="bid-amount" placeholder="0" oninput="previewAmt(this.value)" min="0">
             <span class="unit">원</span>
@@ -1097,7 +1099,7 @@ async function renderDash(tab) {
             <span style="font-size:var(--fs-sm);font-weight:600">${a.CARNAME||''}</span>
             ${statusBadge(a.STATUS)}
           </div>
-          <span style="font-size:var(--fs-xs);color:var(--color-err);font-weight:700">⏱ ${hh}h ${mm}m 남음</span>
+          <span style="font-size:var(--fs-xs);color:var(--color-err);font-weight:700">[시간] ${hh}h ${mm}m 남음</span>
         </div>
         <div class="card-body"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;font-size:var(--fs-xs)">
           <div><div style="color:var(--text-m);margin-bottom:2px">보관장소</div><div style="font-weight:500">${a.LOCATION||'-'}</div></div>
@@ -1141,7 +1143,7 @@ async function renderNewForm() {
   uploadedPhotos = []; uploadedDocs = [];
   document.getElementById('photoList').innerHTML = '';
   document.getElementById('docList').innerHTML = '';
-  ['f-carno','f-carname','f-year','f-note','f-damage','f-evalorg','f-minbid'].forEach(id => {
+  ['f-carowner','f-carno','f-carname','f-year','f-note','f-damage','f-evalorg','f-minbid'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   // 마감일 기본값: 등록일 +3일
@@ -1164,7 +1166,95 @@ async function renderNewForm() {
   }
 }
 
-// ══ 파일 → Base64 변환 헬퍼 ══
+// ══ PDF 파싱 → 폼 자동 입력 ══
+async function handleFilesWithParse(files) {
+  handleFiles(files, 'doc');
+  const pdfFiles = [...files].filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
+  if (!pdfFiles.length) return;
+  setLoading(true, '견적서 분석 중...');
+  try {
+    for (const file of pdfFiles) {
+      const base64 = await fileToBase64(file);
+      const res = await apiPost({ action:'parsePdf', data:base64, fileName:file.name });
+      if (res.ok && res.data) {
+        const d = res.data;
+        if (d.carno    && !document.getElementById('f-carno').value)    document.getElementById('f-carno').value    = d.carno;
+        if (d.carowner && !document.getElementById('f-carowner').value) document.getElementById('f-carowner').value = d.carowner;
+        if (d.damage   && !document.getElementById('f-damage').value)   document.getElementById('f-damage').value   = Number(d.damage).toLocaleString();
+        if (d.evalorg  && !document.getElementById('f-evalorg').value)  document.getElementById('f-evalorg').value  = d.evalorg;
+        toast('견적서 분석 완료 — 정보가 자동 입력되었습니다.', 'ok');
+      }
+    }
+  } catch(e) {
+    toast('견적서 분석 실패. 수동으로 입력해 주세요.', 'warn');
+  } finally { setLoading(false); }
+}
+
+// ══ 낙찰 결과 페이지 ══
+async function showResultPage() {
+  const el = document.getElementById('bidBody');
+  el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-m);font-size:var(--fs-sm)">결과 조회 중...</div>`;
+  try {
+    const [myBids, auctions] = await Promise.all([
+      getMyBids(currentUser?.vendorId),
+      getAuctions(),
+    ]);
+    if (!myBids.length) {
+      el.innerHTML = `<div style="margin-bottom:20px"><div style="font-size:17px;font-weight:700;margin-bottom:4px">낙찰 결과 확인</div><div style="font-size:var(--fs-sm);color:var(--text-s)">참여한 입찰이 없습니다.</div></div>`;
+      return;
+    }
+    const rows = await Promise.all(myBids.map(async b => {
+      const auction = auctions.find(a => a.ID === b.AUCTION_ID) || {};
+      const isClosed = auction.STATUS === 'closed';
+      let resultBadge = '<span class="badge badge-warn">진행중</span>';
+      let resultText  = '마감 후 결과 확인 가능';
+      if (isClosed) {
+        try {
+          const res = await apiPost({ action:'getBidResult', auctionId:b.AUCTION_ID, vendorId:currentUser.vendorId });
+          if (res.ok && res.data) {
+            const d = res.data;
+            if (d.status === 'won') {
+              resultBadge = '<span class="badge badge-ok" style="font-size:13px;height:24px;padding:0 10px">낙찰</span>';
+              resultText  = `${d.totalBids}개 업체 중 최고가 낙찰`;
+            } else if (d.status === 'lost') {
+              resultBadge = '<span class="badge badge-gray" style="font-size:13px;height:24px;padding:0 10px">유찰</span>';
+              resultText  = `${d.totalBids}개 업체 중 ${d.myRank}위`;
+            }
+          }
+        } catch(e) { resultText = '결과 조회 실패'; }
+      }
+      return `
+        <div class="bid-card" style="margin-bottom:14px">
+          <div class="bid-card-head">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="plate">${b.CARNO||auction.CARNO||''}</span>
+              <span style="font-weight:600">${b.CARNAME||auction.CARNAME||''}</span>
+            </div>
+            ${resultBadge}
+          </div>
+          <div class="bid-card-body">
+            <div class="veh-grid" style="margin-bottom:0">
+              <div class="veh-item"><label>내 투찰금액</label><value style="color:var(--color-p);font-size:16px">${Number(b.AMOUNT).toLocaleString()}원</value></div>
+              <div class="veh-item"><label>투찰일시</label><value style="font-size:var(--fs-sm)">${b.SUBMITTED_AT||''}</value></div>
+              <div class="veh-item"><label>평가구분</label><value>${b.EVAL_TYPE||'-'}</value></div>
+              <div class="veh-item"><label>결과</label><value>${resultText}</value></div>
+            </div>
+          </div>
+        </div>`;
+    }));
+    el.innerHTML = `
+      <div style="margin-bottom:20px">
+        <div style="font-size:17px;font-weight:700;color:var(--text-p);margin-bottom:4px">낙찰 결과 확인</div>
+        <div style="font-size:var(--fs-sm);color:var(--text-s)">참여한 입찰 건의 결과를 확인합니다. 타 업체 금액은 비공개입니다.</div>
+      </div>
+      ${rows.join('')}
+      <button class="btn btn-g" style="margin-top:8px" onclick="renderVendorDirect('${currentUser?.vendorId}')">← 입찰 목록으로</button>`;
+  } catch(e) {
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--color-err)">오류가 발생했습니다.</div>`;
+  }
+}
+
+
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -1192,7 +1282,7 @@ function renderFileList(type) {
   const listId = type === 'photo' ? 'photoList' : 'docList';
   document.getElementById(listId).innerHTML = arr.map((f,i) => {
     const isImg = f.type && f.type.startsWith('image/');
-    const preview = isImg ? `<img src="${URL.createObjectURL(f)}" style="width:36px;height:36px;object-fit:cover;border-radius:3px;margin-right:2px">` : '📄';
+    const preview = isImg ? `<img src="${URL.createObjectURL(f)}" style="width:36px;height:36px;object-fit:cover;border-radius:3px;margin-right:2px">` : '[문서]';
     return `<div class="upload-file-item">
       <span>${preview}</span>
       <span class="fname">${f.name}</span>
@@ -1219,6 +1309,7 @@ async function submitNewAuction() {
   try {
     const data = {
       carno, carname,
+      carowner: document.getElementById('f-carowner').value||'',
       year:     document.getElementById('f-year').value||'',
       fuel:     document.getElementById('f-fuel').value,
       acctype:  document.getElementById('f-acctype').value,
@@ -1305,7 +1396,7 @@ async function renderResult() {
       </div>
       <div class="card-body" style="padding:0">
         ${winner ? `<div style="padding:14px 18px;border-bottom:1px solid var(--color-border);background:var(--color-s3b);display:flex;align-items:center;gap:12px">
-          <span style="font-size:var(--fs-xs);font-weight:700;color:var(--color-secd)">🏆 낙찰</span>
+          <span style="font-size:var(--fs-xs);font-weight:700;color:var(--color-secd)">[낙찰] 낙찰</span>
           <span style="font-size:17px;font-weight:700;color:var(--color-p)">${Number(winner.AMOUNT).toLocaleString()}원</span>
           <span style="font-size:var(--fs-sm);color:var(--text-s)">${winner.VENDOR_NAME}</span>
           <span class="badge badge-gray">${winner.EVAL_TYPE||''}</span>
@@ -1435,7 +1526,7 @@ async function openDP(aid) {
             <div class="bid-time">${b.SUBMITTED_AT}</div>
           </div>`).join('')}
         </div>
-        ${a.STATUS==='closed'&&sorted[0]?`<div style="margin-top:9px;padding:9px 12px;background:var(--color-s3b);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--color-secd);font-weight:700">🏆 낙찰: ${sorted[0].VENDOR_NAME} · ${Number(sorted[0].AMOUNT).toLocaleString()}원</div>`:''}
+        ${a.STATUS==='closed'&&sorted[0]?`<div style="margin-top:9px;padding:9px 12px;background:var(--color-s3b);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--color-secd);font-weight:700">[낙찰] 낙찰: ${sorted[0].VENDOR_NAME} · ${Number(sorted[0].AMOUNT).toLocaleString()}원</div>`:''}
       `) : isStaff && a.STATUS === 'closed' ? `
         <div style="border:1px solid var(--color-border);border-radius:var(--radius-sm);overflow:hidden">
           ${staffBids.map((b,i)=>`<div class="bid-result-row">
@@ -1456,20 +1547,20 @@ async function openDP(aid) {
         const photosJson = JSON.stringify(photos).replace(/'/g,"\\'");
         let html = '';
         if (photos.length) {
-          html += `<div style="margin-bottom:8px;font-size:var(--fs-xs);font-weight:700;color:var(--text-m)">📷 차량 사진 (${photos.length}장)</div>`;
+          html += `<div style="margin-bottom:8px;font-size:var(--fs-xs);font-weight:700;color:var(--text-m)">[사진] 차량 사진 (${photos.length}장)</div>`;
           html += `<div class="photo-thumb-grid">`;
           photos.forEach((p,i) => {
             html += `<div class="photo-thumb" onclick="openPhotoViewer(${photosJson},${i})">
-              <img src="${p.url}" alt="${p.name}" onerror="this.parentElement.innerHTML='<div class=\\'photo-thumb-placeholder\\'>🚗</div>'">
-              <div class="photo-thumb-overlay">🔍</div>
+              <img src="${p.url}" alt="${p.name}" onerror="this.parentElement.innerHTML='<div class=\\'photo-thumb-placeholder\\'>[차량]</div>'">
+              <div class="photo-thumb-overlay">[확대]</div>
             </div>`;
           });
           html += `</div>`;
         }
         if (docs.length) {
-          html += `<div style="margin-top:10px;margin-bottom:6px;font-size:var(--fs-xs);font-weight:700;color:var(--text-m)">📄 수리비 견적서 (${docs.length}건)</div>`;
+          html += `<div style="margin-top:10px;margin-bottom:6px;font-size:var(--fs-xs);font-weight:700;color:var(--text-m)">[문서] 수리비 견적서 (${docs.length}건)</div>`;
           docs.forEach((d,i) => {
-            html += `<a class="doc-link-item" href="${d}" target="_blank" rel="noopener">📄 견적서 ${i+1} 열기 →</a>`;
+            html += `<a class="doc-link-item" href="${d}" target="_blank" rel="noopener">[문서] 견적서 ${i+1} 열기 →</a>`;
           });
         }
         if (!photos.length && !docs.length) html = '<div style="font-size:var(--fs-xs);color:var(--text-m)">첨부된 파일 없음</div>';

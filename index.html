@@ -276,8 +276,8 @@ a{text-decoration:none;color:inherit;}
     <div class="login-box">
       <div class="login-brand">
         <img src="https://taksong-driver.openmile.kr/openlink.png" class="login-logo" alt="오픈링크"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-        <div style="display:none;font-size:18px;font-weight:800;color:#fff">오픈링크</div>
+          onerror="this.style.display='none';document.getElementById('login-logo-fallback').style.display='block'">
+        <div id="login-logo-fallback" style="display:none;font-size:20px;font-weight:800;color:#fff;letter-spacing:-.5px">오픈링크</div>
         <div class="login-brand-sub">경쟁입찰시스템 · Competitive Bidding System</div>
       </div>
       <div class="login-body">
@@ -285,13 +285,7 @@ a{text-decoration:none;color:inherit;}
         <p>아이디와 비밀번호를 입력하세요</p>
         <div class="ff"><label>아이디</label><input type="text" id="loginId" placeholder="아이디" autocomplete="username"></div>
         <div class="ff"><label>비밀번호</label><input type="password" id="loginPw" placeholder="비밀번호" autocomplete="current-password"></div>
-        <button class="btn btn-p btn-lg" style="width:100%;margin-top:10px;border-radius:var(--radius)" onclick="doLogin()">로그인</button>
-        <div class="login-demo">
-          <strong>데모 계정</strong><br>
-          · 마스터 : admin / 1234<br>
-          · 담당자 : staff1 / 1234<br>
-          · 업체 : vendor1 / 1234 (카옥스)
-        </div>
+        <button class="btn btn-p btn-lg" style="width:100%;margin-top:10px;border-radius:var(--radius);justify-content:center" onclick="doLogin()">로그인</button>
       </div>
     </div>
   </div>
@@ -616,55 +610,34 @@ let MOCK_BIDS = [
   {ID:'B004',AUCTION_ID:'A002',VENDOR_ID:'V001',VENDOR_NAME:'카옥스',AMOUNT:9800000,EVAL_TYPE:'폐차',EVAL_NOTE:'폐차 평가',AGREED:'Y',SUBMITTED_AT:'2026-04-21 10:14:22'},
 ];
 
-// ══ Sheets 연동 여부 감지 ══
-let useSheets = true;
-
-// ══════ 로그인 ══════
+// ══════ 로그인 (Sheets USERS 시트 전용 인증) ══════
 async function doLogin() {
   const id = document.getElementById('loginId').value.trim();
   const pw = document.getElementById('loginPw').value.trim();
   if (!id || !pw) { toast('아이디와 비밀번호를 입력하세요.', 'err'); return; }
 
-  // 토큰 URL 접속인지 먼저 확인
-  const token = new URLSearchParams(location.search).get('token');
-  if (token) { renderTokenPage(token); return; }
-
   setLoading(true, '로그인 중...');
   try {
-    let user;
-    if (useSheets) {
-      try {
-        const res = await apiGet({ action:'login', id, pw });
-        if (!res.ok) { toast(res.error, 'err'); return; }
-        user = res.user;
-      } catch(e) {
-        // Sheets 연동 실패 시 목 데이터로 폴백
-        useSheets = false;
-        user = MOCK_USERS.find(u => u.id === id && u.pw === pw);
-        if (!user) { toast('아이디 또는 비밀번호가 올바르지 않습니다.', 'err'); return; }
-        user = { id:user.id, role:user.role, name:user.name, vendorId:user.vendorId, initial:user.initial };
-      }
-    } else {
-      user = MOCK_USERS.find(u => u.id === id && u.pw === pw);
-      if (!user) { toast('아이디 또는 비밀번호가 올바르지 않습니다.', 'err'); return; }
-      user = { id:user.id, role:user.role, name:user.name, vendorId:user.vendorId, initial:user.initial };
-    }
+    const res = await apiGet({ action:'login', id, pw });
+    if (!res.ok) { toast(res.error || '아이디 또는 비밀번호가 올바르지 않습니다.', 'err'); return; }
 
-    currentUser = user;
+    currentUser = res.user;
     document.getElementById('pageLogin').classList.remove('on');
 
-    if (user.role === 'vendor') {
+    if (currentUser.role === 'vendor') {
       document.getElementById('pageVendor').classList.add('on');
-      await renderVendorDirect(user.vendorId);
+      await renderVendorDirect(currentUser.vendorId);
     } else {
       document.getElementById('pageApp').classList.add('on');
-      document.getElementById('userName').textContent = user.name;
-      document.getElementById('userInitial').textContent = user.initial || user.name[0];
-      document.getElementById('userRoleBadge').textContent = user.role === 'master' ? '마스터' : '담당자';
-      document.getElementById('nb-master-card').style.display = user.role === 'master' ? '' : 'none';
+      document.getElementById('userName').textContent = currentUser.name;
+      document.getElementById('userInitial').textContent = (currentUser.name||'?')[0];
+      document.getElementById('userRoleBadge').textContent = currentUser.role === 'master' ? '마스터' : '담당자';
+      document.getElementById('nb-master-card').style.display = currentUser.role === 'master' ? '' : 'none';
       await goScreen('dash');
-      toast(`${user.name}님, 환영합니다.`, 'ok');
+      toast(`${currentUser.name}님, 환영합니다.`, 'ok');
     }
+  } catch(e) {
+    toast('서버 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.', 'err');
   } finally {
     setLoading(false);
   }
@@ -917,15 +890,12 @@ async function submitBidEval(auctionId, vendorId, vendorName) {
   setLoading(true, '입찰 제출 중...');
   try {
     const data = { auctionId, vendorId, vendorName, amount, evalType, evalNote: `부대비용: ${surcharge}`, agreed:'Y' };
-    let res;
-    if (useSheets) {
-      try { res = await apiPost({ action:'submitBid', data }); }
-      catch(e) { useSheets = false; res = mockSubmitBid(data); }
-    } else { res = mockSubmitBid(data); }
-
-    if (!res.ok) { toast(res.error, 'err'); return; }
+    const res = await apiPost({ action:'submitBid', data });
+    if (!res.ok) { toast(res.error || '제출 실패', 'err'); return; }
     toast('입찰 평가서가 성공적으로 제출되었습니다.', 'ok');
     await renderVendorBidPage(vendorId, auctionId);
+  } catch(e) {
+    toast('제출 중 오류가 발생했습니다.', 'err');
   } finally { setLoading(false); }
 }
 
@@ -949,7 +919,7 @@ async function goScreen(s) {
   document.getElementById('appTitle').textContent = tm[s] || '';
   if (s==='dash') await renderDash('overview');
   if (s==='list') await renderList();
-  if (s==='new') renderNewForm();
+  if (s==='new') await renderNewForm();
   if (s==='result') await renderResult();
   if (s==='vendor') await renderVendorTbl();
 }
@@ -966,45 +936,34 @@ function switchListTab(tab, btn) {
   renderList();
 }
 
-// ══════ 데이터 로딩 ══════
+// ══════ 데이터 로딩 (Sheets 우선) ══════
 async function getAuctions() {
-  if (!useSheets) return MOCK_AUCTIONS;
-  try { const r = await apiGet({action:'getAuctions'}); return r.ok ? r.data : MOCK_AUCTIONS; }
-  catch(e) { useSheets=false; return MOCK_AUCTIONS; }
+  try { const r = await apiGet({action:'getAuctions'}); return r.ok ? r.data : []; }
+  catch(e) { console.warn('getAuctions 오류:', e); return MOCK_AUCTIONS; }
 }
 async function getAuction(id) {
-  if (!useSheets) return MOCK_AUCTIONS.find(a => a.ID === id) || {};
   try { const r = await apiGet({action:'getAuction',id}); return r.ok ? r.data : {}; }
   catch(e) { return MOCK_AUCTIONS.find(a => a.ID === id) || {}; }
 }
 async function getBids(auctionId) {
-  if (!useSheets) return MOCK_BIDS.filter(b => b.AUCTION_ID === auctionId);
-  try { const r = await apiGet({action:'getBids',auctionId,role:currentUser?.role}); return r.ok && r.data ? r.data : MOCK_BIDS.filter(b => b.AUCTION_ID === auctionId); }
+  try { const r = await apiGet({action:'getBids',auctionId,role:currentUser?.role}); return r.ok && r.data ? r.data : []; }
   catch(e) { return MOCK_BIDS.filter(b => b.AUCTION_ID === auctionId); }
 }
 async function getBidsForVendor(auctionId, vendorId) {
-  if (!useSheets) return MOCK_BIDS.filter(b => b.AUCTION_ID === auctionId);
-  try { const r = await apiGet({action:'getBids',auctionId,role:'vendor'}); return r.ok && r.data ? r.data : MOCK_BIDS.filter(b => b.AUCTION_ID === auctionId); }
+  try { const r = await apiGet({action:'getBids',auctionId,role:'vendor'}); return r.ok && r.data ? r.data : []; }
   catch(e) { return MOCK_BIDS.filter(b => b.AUCTION_ID === auctionId); }
 }
 async function getMyBids(vendorId) {
-  if (!useSheets) {
-    return MOCK_BIDS.filter(b => b.VENDOR_ID === vendorId).map(b => {
-      const a = MOCK_AUCTIONS.find(x => x.ID === b.AUCTION_ID);
-      return { ...b, CARNO:a?.CARNO||'', CARNAME:a?.CARNAME||'' };
-    });
-  }
   try { const r = await apiGet({action:'getMyBids',vendorId}); return r.ok ? r.data : []; }
   catch(e) { return []; }
 }
 async function getVendors() {
-  if (!useSheets) return MOCK_VENDORS;
-  try { const r = await apiGet({action:'getVendors'}); return r.ok ? r.data : MOCK_VENDORS; }
+  try { const r = await apiGet({action:'getVendors'}); return r.ok ? r.data : []; }
   catch(e) { return MOCK_VENDORS; }
 }
 async function getVendorInfo(vendorId) {
   const vendors = await getVendors();
-  return vendors.find(v => v.ID === vendorId || v.id === vendorId);
+  return vendors.find(v => (v.ID||v.id) === vendorId);
 }
 
 // ══════ 대시보드 ══════
@@ -1085,7 +1044,7 @@ async function renderList() {
 function filterList(v) { listSearch = v; renderList(); }
 
 // ══════ 신규 입찰 등록 ══════
-function renderNewForm() {
+async function renderNewForm() {
   uploadedPhotos = []; uploadedDocs = [];
   document.getElementById('photoList').innerHTML = '';
   document.getElementById('docList').innerHTML = '';
@@ -1095,13 +1054,21 @@ function renderNewForm() {
   // 마감일 기본값: 등록일 +3일
   const d = new Date(); d.setDate(d.getDate()+3); d.setHours(18,0,0,0);
   document.getElementById('f-deadline').value = d.toISOString().slice(0,16);
-  // 업체 체크리스트
-  document.getElementById('vendorCheckList').innerHTML = MOCK_VENDORS.filter(v=>v.active==='TRUE').map(v=>`
-    <label style="display:flex;align-items:center;gap:8px;padding:8px 11px;border:1px solid var(--color-border);border-radius:var(--radius-sm);cursor:pointer;font-size:var(--fs-sm);background:var(--color-bg)">
-      <input type="checkbox" value="${v.id||v.ID}" checked style="accent-color:var(--color-p);width:13px;height:13px">
-      <span style="font-weight:600">${v.name||v.NAME}</span>
-      <span style="color:var(--text-m);font-size:var(--fs-xs)">${v.contact||v.CONTACT||''} · ${v.phone||v.PHONE||''}</span>
-    </label>`).join('');
+  // 업체 체크리스트 - Sheets에서 로딩
+  document.getElementById('vendorCheckList').innerHTML = '<div style="font-size:var(--fs-xs);color:var(--text-m);padding:8px 0">업체 목록 로딩 중...</div>';
+  try {
+    const vendors = await getVendors();
+    const active = vendors.filter(v => (v.ACTIVE||v.active) === 'TRUE');
+    document.getElementById('vendorCheckList').innerHTML = active.length ? active.map(v => `
+      <label style="display:flex;align-items:center;gap:8px;padding:8px 11px;border:1px solid var(--color-border);border-radius:var(--radius-sm);cursor:pointer;font-size:var(--fs-sm);background:var(--color-bg)">
+        <input type="checkbox" value="${v.ID||v.id||''}" checked style="accent-color:var(--color-p);width:13px;height:13px">
+        <span style="font-weight:600">${v.NAME||v.name||''}</span>
+        <span style="color:var(--text-m);font-size:var(--fs-xs)">${v.CONTACT||v.contact||''} · ${v.PHONE||v.phone||''}</span>
+      </label>`).join('') :
+      '<div style="font-size:var(--fs-xs);color:var(--text-m);padding:8px 0">등록된 활성 업체가 없습니다. 업체 관리에서 먼저 등록해 주세요.</div>';
+  } catch(e) {
+    document.getElementById('vendorCheckList').innerHTML = '<div style="font-size:var(--fs-xs);color:var(--color-err);padding:8px 0">업체 목록을 불러오지 못했습니다.</div>';
+  }
 }
 
 function handleFiles(files, type) {
@@ -1153,25 +1120,22 @@ async function submitNewAuction() {
       docs: uploadedDocs.map(f=>f.name),
     };
 
-    let res;
-    if (useSheets) {
-      try { res = await apiPost({action:'createAuction',data}); }
-      catch(e) { useSheets=false; res = mockCreateAuction(data); }
-    } else { res = mockCreateAuction(data); }
-
+    const res = await apiPost({action:'createAuction', data});
     if (!res.ok) { toast(res.error||'등록 실패', 'err'); return; }
 
-    // 업체별 전용 URL 생성 (토큰 기반)
     const auctionId = res.id;
+    // 업체별 전용 URL 생성 (토큰 기반)
     checked.forEach(vid => {
       const token = btoa(vid + '|' + auctionId).replace(/\+/g,'_').replace(/\//g,'-').replace(/=/g,'');
       const bidUrl = `${HOSTING_URL}?token=${token}`;
       console.log(`[${vid}] 입찰 링크: ${bidUrl}`);
-      // 실제 운영 시: 모아샷 문자 발송
+      // 모아샷 문자 발송은 Apps Script에서 처리
     });
 
     toast(`입찰 등록 완료! ${checked.length}개 업체에 전용 링크가 발송됩니다.`, 'ok');
     await goScreen('list');
+  } catch(e) {
+    toast('등록 중 오류가 발생했습니다: ' + e.message, 'err');
   } finally { setLoading(false); }
 }
 
@@ -1249,15 +1213,14 @@ async function addVendor() {
   setLoading(true, '업체 등록 중...');
   try {
     const data = { name, loginId:lid, pw, contact:document.getElementById('mv-contact').value, phone:document.getElementById('mv-phone').value };
-    let res;
-    if (useSheets) {
-      try { res = await apiPost({action:'addVendor',data}); }
-      catch(e) { useSheets=false; res = mockAddVendor(data); }
-    } else { res = mockAddVendor(data); }
-    if (!res.ok) { toast(res.error, 'err'); return; }
+    const res = await apiPost({action:'addVendor', data});
+    if (!res.ok) { toast(res.error || '등록 실패', 'err'); return; }
     closeModal('addVendorModal');
+    ['mv-name','mv-id','mv-pw','mv-contact','mv-phone'].forEach(id => document.getElementById(id).value='');
     await renderVendorTbl();
     toast(`${name} 업체가 등록되었습니다.`, 'ok');
+  } catch(e) {
+    toast('등록 중 오류가 발생했습니다.', 'err');
   } finally { setLoading(false); }
 }
 function mockAddVendor(data) {
@@ -1365,15 +1328,13 @@ async function closeAuction(aid) {
   if (!confirm('입찰을 마감 처리하시겠습니까?')) return;
   setLoading(true, '마감 처리 중...');
   try {
-    let res;
-    if (useSheets) {
-      try { res = await apiPost({action:'closeAuction',auctionId:aid}); }
-      catch(e) { useSheets=false; res = mockCloseAuction(aid); }
-    } else { res = mockCloseAuction(aid); }
+    const res = await apiPost({action:'closeAuction', auctionId:aid});
     if (!res.ok) { toast(res.error||'오류', 'err'); return; }
     closeDP();
     toast('입찰이 마감 처리되었습니다.', 'ok');
     await renderList();
+  } catch(e) {
+    toast('처리 중 오류가 발생했습니다.', 'err');
   } finally { setLoading(false); }
 }
 function mockCloseAuction(aid) {

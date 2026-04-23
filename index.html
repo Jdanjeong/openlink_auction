@@ -330,15 +330,15 @@ a{text-decoration:none;color:inherit;}
       <!-- 헤더 상단 행 -->
       <div style="display:grid;grid-template-columns:var(--w-sidebar) 1fr;height:var(--h-header);flex-shrink:0;">
         <div class="hd-brand">
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;">
             <img src="https://taksong-driver.openmile.kr/openlink.png" class="hd-logo" alt="오픈링크"
               onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
             <div style="display:none;font-size:16px;font-weight:800;color:#fff;letter-spacing:-.3px">오픈링크</div>
-            <span style="font-size:11px;color:rgba(255,255,255,.75);font-weight:600;letter-spacing:.05em;white-space:nowrap;text-align:center">경쟁입찰시스템</span>
+            <span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:600;letter-spacing:.06em;text-align:center">경쟁입찰시스템</span>
           </div>
         </div>
         <div class="hd-right">
-          <span class="hd-title" id="appTitle">대시보드</span>
+          <div></div>
           <div class="hd-acts">
             <div class="hd-user">
               <div class="hd-dot" id="userInitial">A</div>
@@ -351,9 +351,9 @@ a{text-decoration:none;color:inherit;}
         </div>
       </div>
       <!-- 탭바 행 -->
-      <div style="display:grid;grid-template-columns:var(--w-sidebar) 1fr;border-top:1px solid rgba(255,255,255,.15);flex-shrink:0;min-height:36px;">
+      <div style="display:grid;grid-template-columns:var(--w-sidebar) 1fr;flex-shrink:0;min-height:36px;">
         <div style="background:var(--color-p);"></div>
-        <div id="appTabBar" style="display:flex;align-items:flex-end;background:var(--color-s1);padding:5px 12px 0;gap:2px;overflow-x:auto;overflow-y:hidden;border-left:1px solid var(--color-border);">
+        <div id="appTabBar" style="display:flex;align-items:flex-end;background:var(--color-s1);padding:5px 12px 0;gap:2px;overflow-x:auto;overflow-y:hidden;border-top:1px solid var(--color-border);border-left:1px solid var(--color-border);">
         </div>
       </div>
     </header>

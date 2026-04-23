@@ -746,8 +746,8 @@ async function renderVendorDirect(vendorId) {
   const el = document.getElementById('bidBody');
   el.innerHTML = `
     <div style="margin-bottom:20px">
-      <div style="font-size:17px;font-weight:700;color:var(--text-p);margin-bottom:3px">안녕하세요, ${vendor?.NAME || vendorId}님</div>
-      <div style="font-size:var(--fs-sm);color:var(--text-s)">참여 가능한 입찰 건을 확인하고 견적을 제출해 주세요.</div>
+      <div style="font-size:22px;font-weight:800;color:var(--text-p);margin-bottom:5px;letter-spacing:-.5px">안녕하세요, ${vendor?.NAME || vendorId}님</div>
+      <div style="font-size:15px;color:var(--text-s)">참여 가능한 입찰 건을 확인하고 견적을 제출해 주세요.</div>
     </div>
     ${!myAuctions.length ? '<div class="bid-card"><div class="bid-card-body" style="text-align:center;padding:40px 20px;color:var(--text-m);font-size:var(--fs-sm)">현재 참여 가능한 입찰이 없습니다.</div></div>' : ''}
     ${myAuctions.map(a => {
@@ -797,9 +797,9 @@ async function renderVendorBidPage(vendorId, auctionId) {
 
     const el = document.getElementById('bidBody');
     el.innerHTML = `
-      <div style="margin-bottom:20px">
-        <div style="font-size:17px;font-weight:700;color:var(--text-p);margin-bottom:3px">잔존물 입찰 평가서</div>
-        <div style="font-size:var(--fs-xs);color:var(--text-m)">아래 차량 정보를 확인하고 입찰 평가서를 작성해 주세요.</div>
+      <div style="margin-bottom:24px;text-align:center;padding:20px 0 10px;">
+        <div style="font-size:26px;font-weight:800;color:var(--text-p);margin-bottom:6px;letter-spacing:-.5px">잔존물 입찰 평가서</div>
+        <div style="font-size:15px;color:var(--text-m)">아래 차량 정보를 확인하고 입찰 평가서를 작성해 주세요.</div>
       </div>
 
       <!-- 차량 정보 -->
@@ -812,10 +812,10 @@ async function renderVendorBidPage(vendorId, auctionId) {
             <div class="veh-item"><label>연료</label><value>${auction.FUEL}</value></div>
             <div class="veh-item"><label>사고유형</label><value>${auction.ACCTYPE}</value></div>
             <div class="veh-item"><label>보관장소</label><value>${auction.LOCATION||'-'}</value></div>
-            <div class="veh-item"><label>마감일시</label><value style="font-family:var(--font-mono)">${(auction.DEADLINE||'').replace('T',' ')}</value></div>
+            <div class="veh-item"><label>마감일시</label><value>${fmtDate(auction.DEADLINE)}</value></div>
           </div>
-          ${auction.NOTE ? `<div style="padding:9px 11px;background:var(--color-s1);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--text-s);line-height:1.7">${auction.NOTE}</div>` : ''}
-          ${!isClosed ? `<div style="margin-top:10px;padding:8px 12px;background:var(--color-warnbg);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:#92400E;font-weight:600">[시간] 마감까지 ${hh}시간 ${mm}분 남았습니다</div>` : ''}
+          ${auction.NOTE ? `<div style="padding:9px 11px;background:var(--color-s1);border-radius:var(--radius-sm);font-size:var(--fs-sm);color:var(--text-s);line-height:1.7">${auction.NOTE}</div>` : ''}
+          ${!isClosed ? `<div style="margin-top:10px;padding:10px 14px;background:var(--color-warnbg);border-radius:var(--radius-sm);font-size:var(--fs-sm);color:#92400E;font-weight:600">마감까지 ${hh}시간 ${mm}분 남았습니다</div>` : ''}
         </div>
       </div>
 

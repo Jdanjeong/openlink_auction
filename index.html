@@ -1713,8 +1713,10 @@ function mockCloseAuction(aid) {
   return {ok:true};
 }
 
-function copyBidLink(auctionId) {
-  const auc = (await getAuctions()).find(a=>a.ID===auctionId); const vendors = parseVendors(auc?.VENDORS);
+async function copyBidLink(auctionId) {
+  const auctions = await getAuctions();
+  const auc = auctions.find(a => a.ID === auctionId);
+  const vendors = parseVendors(auc?.VENDORS);
   if (!vendors.length) { toast('발송 업체가 없습니다.', 'err'); return; }
   const token = btoa(vendors[0] + '|' + auctionId).replace(/\+/g,'_').replace(/\//g,'-').replace(/=/g,'');
   const url = `${HOSTING_URL}?token=${token}`;

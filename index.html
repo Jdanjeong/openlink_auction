@@ -13,7 +13,7 @@
   --fs-body:13px; --fs-sm:12px; --fs-xs:11px;
   --space-2:8px; --space-3:16px; --space-4:24px; --space-5:48px;
   --h-row-sm:32px; --h-row:38px; --h-btn-lg:46px; --h-header:52px;
-  --w-sidebar:220px;
+  --w-sidebar:230px;
   --radius-sm:4px; --radius:6px; --radius-md:10px; --radius-full:999px;
   --color-bg:#FFFFFF; --color-s1:#F4F7FF; --color-s2:#E4EAFF;
   --color-s3a:#EEF2FF; --color-s3b:#F0FBF8;
@@ -73,10 +73,10 @@ a{text-decoration:none;color:inherit;}
 .mn{grid-area:mn;background:var(--color-s1);overflow-y:auto;display:flex;flex-direction:column;height:calc(100vh - var(--h-header));}
 
 /* ── 헤더 ── */
-.hd-brand{background:var(--color-p);display:flex;align-items:center;padding:0 18px;gap:10px;overflow:hidden;}
+.hd-brand{background:var(--color-p);display:flex;align-items:center;padding:0 16px;gap:8px;min-width:0;}
 .hd-logo{height:22px;object-fit:contain;filter:brightness(0) invert(1);}
 .hd-div{width:1px;height:16px;background:rgba(255,255,255,.25);flex-shrink:0;}
-.hd-sysname{font-size:var(--fs-xs);color:rgba(255,255,255,.75);font-weight:600;white-space:nowrap;}
+.hd-sysname{font-size:10px;color:rgba(255,255,255,.75);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .hd-right{background:var(--color-bg);display:flex;align-items:center;justify-content:space-between;padding:0 18px;min-width:0;}
 .hd-title{font-size:var(--fs-sm);color:var(--text-s);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .hd-acts{display:flex;align-items:center;gap:8px;flex-shrink:0;}
@@ -1025,12 +1025,28 @@ async function getBidsAll() {
   catch(e) { return []; }
 }
 
+// ══ 날짜 포맷 헬퍼 ══
+function fmtDate(val) {
+  if (!val) return '-';
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return String(val).replace('T',' ').slice(0,16);
+  return d.toLocaleString('ko-KR', {
+    year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Asia/Seoul'
+  }).replace(/\. /g,'-').replace('.','-').replace(', ',' ').slice(0,16);
+}
+
+// ══ vendors 파싱 헬퍼 ══
+function parseVendors(vendors) {
+  if (!vendors) return [];
+  if (Array.isArray(vendors)) return vendors.filter(Boolean);
+  return String(vendors).split(',').filter(Boolean);
+}
+
 // ══════ 대시보드 ══════
 async function renderDash(tab) {
   const [auctions, vendors, bidsData] = await Promise.all([
-    getAuctions(),
-    getVendors(),
-    getBidsAll(),
+    getAuctions(), getVendors(), getBidsAll(),
   ]);
   const ongoing = auctions.filter(a => a.STATUS === 'ongoing');
   const closed  = auctions.filter(a => a.STATUS === 'closed');
@@ -1040,6 +1056,19 @@ async function renderDash(tab) {
   const el = document.getElementById('dashContent');
 
   if (tab === 'overview') {
+    const rows = auctions.map(a => {
+      const bidCount = bidsData.filter(b => b.AUCTION_ID === a.ID).length;
+      const vendorCount = parseVendors(a.VENDORS).length;
+      return `<tr onclick="openDP('${a.ID}')">
+        <td><span class="plate">${a.CARNO||''}</span></td>
+        <td style="font-weight:500">${a.CARNAME||''}</td>
+        <td class="td-m">${fmtDate(a.DEADLINE)}</td>
+        <td>${statusBadge(a.STATUS)}</td>
+        <td class="td-m">${bidCount} / ${vendorCount}개</td>
+        <td class="td-m">${a.STAFF||''}</td>
+      </tr>`;
+    }).join('');
+
     el.innerHTML = `
       <div class="kpi-grid">
         <div class="kpi kpi-accent"><div class="kpi-label">진행 중 입찰</div><div class="kpi-value">${ongoing.length}<span class="unit">건</span></div><div class="kpi-sub">마감 전 입찰 건</div></div>
@@ -1048,34 +1077,31 @@ async function renderDash(tab) {
         <div class="kpi"><div class="kpi-label">활성 업체</div><div class="kpi-value">${activeVendors.length}<span class="unit">개</span></div><div class="kpi-sub">등록 업체 기준</div></div>
       </div>
       <div style="font-size:var(--fs-xs);font-weight:700;color:var(--text-m);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">최근 입찰 현황</div>
-      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>차량번호</th><th>차종</th><th>마감일시</th><th>상태</th><th>참여/발송</th><th>담당자</th></tr></thead><tbody>
-        ${auctions.map(a => {
-          const bidCount = bidsData.filter(b => b.AUCTION_ID === a.ID).length;
-          const vendorCount = (a.VENDORS||'').split(',').filter(Boolean).length;
-          return `<tr onclick="openDP('${a.ID}')">
-            <td><span class="plate">${a.CARNO}</span></td>
-            <td style="font-weight:500">${a.CARNAME}</td>
-            <td class="td-m fw-mono">${(a.DEADLINE||'').replace('T',' ')}</td>
-            <td>${statusBadge(a.STATUS)}</td>
-            <td class="td-m">${bidCount} / ${vendorCount}개</td>
-            <td class="td-m">${a.STAFF||''}</td>
-          </tr>`;
-        }).join('')}
-      </tbody></table></div>`;
+      ${auctions.length === 0
+        ? '<div class="empty-state"><h4>등록된 입찰 없음</h4><p>신규 입찰을 등록하세요.</p></div>'
+        : `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>차량번호</th><th>차종</th><th>마감일시</th><th>상태</th><th>참여/발송</th><th>담당자</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      }`;
   } else {
-    if (!ongoing.length) { el.innerHTML = '<div class="empty-state"><h4>진행 중인 입찰 없음</h4><p>신규 입찰을 등록하세요.</p></div>'; return; }
+    if (!ongoing.length) {
+      el.innerHTML = '<div class="empty-state"><h4>진행 중인 입찰 없음</h4><p>신규 입찰을 등록하세요.</p></div>';
+      return;
+    }
     el.innerHTML = ongoing.map(a => {
       const remain = Math.max(0, Math.floor((new Date(a.DEADLINE) - new Date()) / 60000));
       const hh = Math.floor(remain/60), mm = remain % 60;
       const bidCount = bidsData.filter(b => b.AUCTION_ID === a.ID).length;
       return `<div class="card" style="margin-bottom:14px;cursor:pointer" onclick="openDP('${a.ID}')">
         <div class="card-head">
-          <div style="display:flex;align-items:center;gap:8px"><span class="plate">${a.CARNO}</span><span style="font-size:var(--fs-sm);font-weight:600">${a.CARNAME}</span>${statusBadge(a.STATUS)}</div>
-          <span style="font-size:var(--fs-xs);color:var(--color-err);font-weight:700;font-family:var(--font-mono)">⏱ ${hh}h ${mm}m 남음</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="plate">${a.CARNO||''}</span>
+            <span style="font-size:var(--fs-sm);font-weight:600">${a.CARNAME||''}</span>
+            ${statusBadge(a.STATUS)}
+          </div>
+          <span style="font-size:var(--fs-xs);color:var(--color-err);font-weight:700">⏱ ${hh}h ${mm}m 남음</span>
         </div>
         <div class="card-body"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;font-size:var(--fs-xs)">
           <div><div style="color:var(--text-m);margin-bottom:2px">보관장소</div><div style="font-weight:500">${a.LOCATION||'-'}</div></div>
-          <div><div style="color:var(--text-m);margin-bottom:2px">마감일시</div><div style="font-weight:500;font-family:var(--font-mono)">${(a.DEADLINE||'').replace('T',' ')}</div></div>
+          <div><div style="color:var(--text-m);margin-bottom:2px">마감일시</div><div style="font-weight:500">${fmtDate(a.DEADLINE)}</div></div>
           <div><div style="color:var(--text-m);margin-bottom:2px">투찰 현황</div><div style="font-weight:500">${bidCount}개 업체 참여</div></div>
         </div></div>
       </div>`;
@@ -1090,22 +1116,25 @@ async function renderList() {
   if (listFilter !== 'all') data = data.filter(a => a.STATUS === listFilter);
   if (listSearch) data = data.filter(a => (a.CARNO||'').includes(listSearch) || (a.CARNAME||'').includes(listSearch));
   document.getElementById('listCount').textContent = `총 ${data.length}건`;
-  document.getElementById('auctionTblBody').innerHTML = data.map(a => {
-    const bidCount = bidsData.filter(b => b.AUCTION_ID === a.ID).length;
-    const vendorCount = (a.VENDORS||'').split(',').filter(Boolean).length;
-    return `<tr onclick="openDP('${a.ID}')">
-      <td><span class="plate">${a.CARNO}</span></td>
-      <td style="font-weight:500">${a.CARNAME}</td>
-      <td class="td-m">${a.ACCTYPE||''}</td>
-      <td class="td-m fw-mono">${(a.DEADLINE||'').replace('T',' ')}</td>
-      <td>${statusBadge(a.STATUS)}</td>
-      <td class="td-m">${bidCount} / ${vendorCount}</td>
-      <td class="td-m">${a.STAFF||''}</td>
-      <td><button class="btn btn-g btn-sm" onclick="event.stopPropagation();openDP('${a.ID}')">상세</button></td>
-    </tr>`;
-  }).join('');
+  document.getElementById('auctionTblBody').innerHTML = data.length === 0
+    ? `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-m);font-size:var(--fs-xs)">등록된 입찰이 없습니다.</td></tr>`
+    : data.map(a => {
+        const bidCount = bidsData.filter(b => b.AUCTION_ID === a.ID).length;
+        const vendorCount = parseVendors(a.VENDORS).length;
+        return `<tr onclick="openDP('${a.ID}')">
+          <td><span class="plate">${a.CARNO||''}</span></td>
+          <td style="font-weight:500">${a.CARNAME||''}</td>
+          <td class="td-m">${a.ACCTYPE||''}</td>
+          <td class="td-m">${fmtDate(a.DEADLINE)}</td>
+          <td>${statusBadge(a.STATUS)}</td>
+          <td class="td-m">${bidCount} / ${vendorCount}</td>
+          <td class="td-m">${a.STAFF||''}</td>
+          <td><button class="btn btn-g btn-sm" onclick="event.stopPropagation();openDP('${a.ID}')">상세</button></td>
+        </tr>`;
+      }).join('');
 }
 function filterList(v) { listSearch = v; renderList(); }
+
 
 // ══════ 신규 입찰 등록 ══════
 async function renderNewForm() {

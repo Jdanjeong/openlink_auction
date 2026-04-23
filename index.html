@@ -9,8 +9,8 @@
 :root {
   --font-base:'Pretendard Variable','Noto Sans KR',-apple-system,sans-serif;
   --font-mono:'JetBrains Mono','Fira Code',monospace;
-  --fs-h1:24px; --fs-h2:18px; --fs-h3:15px;
-  --fs-body:14px; --fs-sm:13px; --fs-xs:12px;
+  --fs-h1:26px; --fs-h2:22px; --fs-h3:18px;
+  --fs-body:15px; --fs-sm:14px; --fs-xs:13px;
   --space-2:8px; --space-3:16px; --space-4:24px; --space-5:48px;
   --h-row-sm:32px; --h-row:38px; --h-btn-lg:46px; --h-header:56px;
   --w-sidebar:240px;
@@ -67,10 +67,10 @@ a{text-decoration:none;color:inherit;}
 .sec-label:first-child{margin-top:0;}
 
 /* ── 앱 셸 ── */
-.shell{display:grid;grid-template-rows:var(--h-header) 1fr;grid-template-columns:var(--w-sidebar) 1fr;grid-template-areas:"hd hd""nb mn";height:100vh;overflow:hidden;}
-.hd{grid-area:hd;height:var(--h-header);display:grid;grid-template-columns:var(--w-sidebar) 1fr;border-bottom:1px solid var(--color-border);position:sticky;top:0;z-index:30;}
-.nb{grid-area:nb;height:calc(100vh - var(--h-header));overflow-y:auto;background:var(--color-s1);padding:14px 16px 48px;border-right:1px solid var(--color-border);}
-.mn{grid-area:mn;background:var(--color-s1);overflow-y:auto;display:flex;flex-direction:column;height:calc(100vh - var(--h-header));}
+.shell{display:grid;grid-template-rows:var(--h-header) 40px 1fr;grid-template-columns:var(--w-sidebar) 1fr;grid-template-areas:"hd hd""hd hd""nb mn";height:100vh;overflow:hidden;}
+.hd{grid-area:hd;display:flex;flex-direction:column;border-bottom:1px solid var(--color-border);position:sticky;top:0;z-index:30;}
+.nb{grid-area:nb;overflow-y:auto;background:var(--color-s1);padding:14px 16px 48px;border-right:1px solid var(--color-border);}
+.mn{grid-area:mn;background:var(--color-s1);display:flex;flex-direction:column;overflow:hidden;}
 
 /* ── 헤더 ── */
 .hd-brand{background:var(--color-p);display:flex;align-items:center;padding:0 20px;gap:10px;}
@@ -93,6 +93,16 @@ a{text-decoration:none;color:inherit;}
 .nb-item.active{font-weight:700;color:var(--color-p);}
 .nb-item.active::before{background:var(--color-p);}
 .nb-badge{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:16px;padding:0 4px;border-radius:var(--radius-full);font-size:10px;font-weight:700;background:var(--color-p);color:#fff;}
+
+/* ── 앱 탭 (상단 탭바) ── */
+.app-tab{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;font-size:var(--fs-sm);font-weight:500;color:var(--text-s);background:var(--color-s2);border:1px solid var(--color-border);border-bottom:none;border-radius:var(--radius-sm) var(--radius-sm) 0 0;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:var(--font-base);letter-spacing:-.3px;user-select:none;flex-shrink:0;}
+.app-tab:hover{background:var(--color-bg);color:var(--text-p);}
+.app-tab.active{background:var(--color-bg);color:var(--color-p);font-weight:700;border-bottom:2px solid var(--color-bg);height:32px;margin-bottom:-1px;position:relative;z-index:2;}
+.app-tab-close{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:3px;font-size:11px;color:var(--text-m);transition:all .12s;line-height:1;margin-left:2px;}
+.app-tab-close:hover{background:var(--color-s2);color:var(--text-p);}
+.app-tab.active .app-tab-close:hover{background:var(--color-pbg);color:var(--color-p);}
+#appTabBar::-webkit-scrollbar{height:3px;}
+#appTabBar::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:2px;}
 
 /* ── 스크린 ── */
 .screen{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
@@ -317,24 +327,33 @@ a{text-decoration:none;color:inherit;}
 <div class="page" id="pageApp">
   <div class="shell">
     <header class="hd">
-      <div class="hd-brand">
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
-          <img src="https://taksong-driver.openmile.kr/openlink.png" class="hd-logo" alt="오픈링크"
-            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-          <div style="display:none;font-size:16px;font-weight:800;color:#fff;letter-spacing:-.3px">오픈링크</div>
-          <span style="font-size:11px;color:rgba(255,255,255,.75);font-weight:600;letter-spacing:.05em;white-space:nowrap;text-align:center">경쟁입찰시스템</span>
+      <!-- 헤더 상단 행 -->
+      <div style="display:grid;grid-template-columns:var(--w-sidebar) 1fr;height:var(--h-header);flex-shrink:0;">
+        <div class="hd-brand">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+            <img src="https://taksong-driver.openmile.kr/openlink.png" class="hd-logo" alt="오픈링크"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+            <div style="display:none;font-size:16px;font-weight:800;color:#fff;letter-spacing:-.3px">오픈링크</div>
+            <span style="font-size:11px;color:rgba(255,255,255,.75);font-weight:600;letter-spacing:.05em;white-space:nowrap;text-align:center">경쟁입찰시스템</span>
+          </div>
+        </div>
+        <div class="hd-right">
+          <span class="hd-title" id="appTitle">대시보드</span>
+          <div class="hd-acts">
+            <div class="hd-user">
+              <div class="hd-dot" id="userInitial">A</div>
+              <span id="userName">관리자</span>
+              <span class="badge badge-p" id="userRoleBadge">마스터</span>
+            </div>
+            <button class="btn btn-g btn-sm" onclick="refreshScreen()" title="현재 화면 새로고침" style="padding:0 8px">↻</button>
+            <button class="btn btn-g btn-sm" onclick="doLogout()">로그아웃</button>
+          </div>
         </div>
       </div>
-      <div class="hd-right">
-        <span class="hd-title" id="appTitle">대시보드</span>
-        <div class="hd-acts">
-          <div class="hd-user">
-            <div class="hd-dot" id="userInitial">A</div>
-            <span id="userName">관리자</span>
-            <span class="badge badge-p" id="userRoleBadge">마스터</span>
-          </div>
-          <button class="btn btn-g btn-sm" onclick="refreshScreen()" title="현재 화면 새로고침" style="padding:0 8px">↻</button>
-          <button class="btn btn-g btn-sm" onclick="doLogout()">로그아웃</button>
+      <!-- 탭바 행 -->
+      <div style="display:grid;grid-template-columns:var(--w-sidebar) 1fr;border-top:1px solid rgba(255,255,255,.15);flex-shrink:0;min-height:36px;">
+        <div style="background:var(--color-p);"></div>
+        <div id="appTabBar" style="display:flex;align-items:flex-end;background:var(--color-s1);padding:5px 12px 0;gap:2px;overflow-x:auto;overflow-y:hidden;border-left:1px solid var(--color-border);">
         </div>
       </div>
     </header>
@@ -671,6 +690,10 @@ async function doLogin() {
       document.getElementById('userInitial').textContent = (currentUser.name||'?')[0];
       document.getElementById('userRoleBadge').textContent = currentUser.role === 'master' ? '마스터' : '담당자';
       document.getElementById('nb-master-card').style.display = currentUser.role === 'master' ? '' : 'none';
+      // 탭 초기화
+      openTabs = ['dash'];
+      activeTab = 'dash';
+      renderTabBar();
       await goScreen('dash');
       toast(`${currentUser.name}님, 환영합니다.`, 'ok');
     }
@@ -966,11 +989,58 @@ function mockSubmitBid(data) {
   return { ok:true };
 }
 
-// ══ 화면별 초기화 완료 여부 추적 ══
-const screenLoaded = { dash:false, list:false, result:false, vendor:false };
+// ══ 앱 탭 관리 시스템 ══
+const TAB_INFO = {
+  dash:   { label:'대시보드',      closable:false },
+  list:   { label:'입찰 목록',     closable:true  },
+  new:    { label:'신규 입찰 등록', closable:true  },
+  result: { label:'낙찰 결과',     closable:true  },
+  vendor: { label:'업체 관리',     closable:true  },
+  guide:  { label:'사용 가이드',   closable:true  },
+};
 
-// ══════ 화면 전환 ══════
-async function goScreen(s, forceRefresh=false) {
+let openTabs   = ['dash']; // 열린 탭 목록
+let activeTab  = 'dash';   // 현재 활성 탭
+
+function renderTabBar() {
+  const bar = document.getElementById('appTabBar');
+  if (!bar) return;
+  bar.innerHTML = openTabs.map(s => {
+    const info = TAB_INFO[s] || { label:s, closable:true };
+    const isActive = s === activeTab;
+    return `<div class="app-tab ${isActive?'active':''}" onclick="activateTab('${s}')" title="${info.label}">
+      <span>${info.label}</span>
+      ${info.closable ? `<span class="app-tab-close" onclick="closeTab(event,'${s}')">×</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function activateTab(s) {
+  activeTab = s;
+  renderTabBar();
+  // 화면 전환 (캐시 활용)
+  _switchScreen(s);
+}
+
+function closeTab(e, s) {
+  e.stopPropagation();
+  openTabs = openTabs.filter(t => t !== s);
+  // 닫힌 탭이 활성이면 마지막 탭으로 이동
+  if (activeTab === s) {
+    activeTab = openTabs[openTabs.length - 1] || 'dash';
+    if (!openTabs.includes('dash') && activeTab === 'dash') openTabs.unshift('dash');
+  }
+  renderTabBar();
+  _switchScreen(activeTab);
+}
+
+function openTab(s) {
+  // 탭이 없으면 추가
+  if (!openTabs.includes(s)) openTabs.push(s);
+  activateTab(s);
+}
+
+function _switchScreen(s) {
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('on'));
   document.querySelectorAll('.nb-item').forEach(el => el.classList.remove('active'));
   const sm = {dash:'sDash',list:'sList',new:'sNew',result:'sResult',vendor:'sVendor',guide:'sGuide'};
@@ -979,24 +1049,28 @@ async function goScreen(s, forceRefresh=false) {
   document.getElementById(sm[s])?.classList.add('on');
   if (nm[s]) document.getElementById(nm[s])?.classList.add('active');
   document.getElementById('appTitle').textContent = tm[s] || '';
-
-  // 이미 로드된 화면은 재로드 안 함 (forceRefresh=true 일 때만 갱신)
-  if (s === 'dash'   && (!screenLoaded.dash   || forceRefresh)) { await renderDash('overview'); screenLoaded.dash   = true; }
-  if (s === 'list'   && (!screenLoaded.list   || forceRefresh)) { await renderList();           screenLoaded.list   = true; }
-  if (s === 'new')   { await renderNewForm(); } // 등록 폼은 항상 초기화
-  if (s === 'result' && (!screenLoaded.result || forceRefresh)) { await renderResult();         screenLoaded.result = true; }
-  if (s === 'vendor' && (!screenLoaded.vendor || forceRefresh)) { await renderVendorTbl();      screenLoaded.vendor = true; }
+  // 캐시 적용 — 이미 로드된 화면은 재로드 안 함
+  if (s==='dash'   && !screenLoaded.dash)   { renderDash('overview'); screenLoaded.dash=true; }
+  if (s==='list'   && !screenLoaded.list)   { renderList();           screenLoaded.list=true; }
+  if (s==='new')   { renderNewForm(); }
+  if (s==='result' && !screenLoaded.result) { renderResult();         screenLoaded.result=true; }
+  if (s==='vendor' && !screenLoaded.vendor) { renderVendorTbl();      screenLoaded.vendor=true; }
 }
 
-// 새로고침 버튼용 함수
+// ══ 화면별 초기화 완료 여부 추적 ══
+const screenLoaded = { dash:false, list:false, result:false, vendor:false };
+
+// ══════ 화면 전환 (사이드바 메뉴 클릭 시) ══════
+async function goScreen(s, forceRefresh=false) {
+  if (forceRefresh) screenLoaded[s] = false;
+  openTab(s);
+}
+
+// 새로고침 버튼
 function refreshScreen() {
-  const current = Object.keys({dash:'sDash',list:'sList',result:'sResult',vendor:'sVendor'})
-    .find(k => document.getElementById({dash:'sDash',list:'sList',result:'sResult',vendor:'sVendor'}[k])?.classList.contains('on'));
-  if (current) {
-    Object.keys(screenLoaded).forEach(k => { if (k===current) screenLoaded[k]=false; });
-    goScreen(current, true);
-    toast('새로고침 완료', 'ok');
-  }
+  screenLoaded[activeTab] = false;
+  _switchScreen(activeTab);
+  toast('새로고침 완료', 'ok');
 }
 
 function switchDashTab(tab, btn) {
@@ -1613,7 +1687,7 @@ async function closeAuction(aid) {
     screenLoaded.list = false;
     screenLoaded.dash = false;
     screenLoaded.result = false;
-    await renderList();
+    _switchScreen(activeTab);
   } catch(e) {
     toast('처리 중 오류가 발생했습니다.', 'err');
   } finally { setLoading(false); }

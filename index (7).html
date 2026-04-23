@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>오픈링크 경쟁입찰시스템</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/webfonts/JetBrainsMono-Regular.css" rel="stylesheet">
+<style>
+:root {
+  --font-base: 'Pretendard Variable','Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-mono: 'JetBrains Mono','Fira Code',monospace;
+  --letter-spacing: -0.3px;
+  --fs-display: 32px; --fw-display: 700; --lh-display: 1.1;
+  --fs-h1: 22px;  --fw-h1: 700;  --lh-h1: 1.3;
+  --fs-h2: 17px;  --fw-h2: 700;  --lh-h2: 1.35;
+  --fs-h3: 14px;  --fw-h3: 700;  --lh-h3: 1.4;
+  --fs-body: 13px; --fw-body: 400; --lh-body: 1.65;
+  --fs-sm: 12px;   --lh-sm: 1.6;
+  --fs-xs: 11px;   --lh-xs: 1.5;
+  --space-1:4px; --space-2:8px; --space-3:16px; --space-4:24px; --space-5:48px; --space-6:80px;
+  --h-row-sm:32px; --h-row:38px; --h-btn-lg:46px; --h-header:52px;
+  --w-sidebar:220px;
+  --radius-sm:4px; --radius:6px; --radius-md:10px; --radius-full:999px;
+
+  /* ── 오픈링크 블루 컬러 시스템 ── */
+  --color-bg-page:#FFFFFF;
+  --color-surface-1:#F4F7FF;
+  --color-surface-2:#E4EAFF;
+  --color-surface-3a:#EEF2FF;
+  --color-surface-3b:#F0FBF8;
+  --color-border:#D8E0F5;
+  --text-primary:#0D1B3E;
+  --text-secondary:#4A5680;
+  --text-muted:#8A96B8;
+  --text-inverse:#FFFFFF;
+  --color-primary:#0047FF;
+  --color-primary-dark:#0035CC;
+  --color-primary-muted:#3366FF;
+  --color-primary-light:#99B8FF;
+  --color-primary-bg:#EEF2FF;
+  --color-secondary:#38BFA1;
+  --color-secondary-dark:#1E9E86;
+  --color-secondary-light:#A8DDD5;
+  --color-success:#1E9E86;
+  --color-danger:#E53935;
+  --color-danger-bg:#FFF3F3;
+  --color-warn:#F59E0B;
+  --color-warn-bg:#FFFBEB;
+  --color-overlay:rgba(13,27,62,.38);
+  --color-overlay-sm:rgba(13,27,62,.18);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{height:100%;}
+body{font-family:var(--font-base);background:var(--color-bg-page);color:var(--text-primary);font-size:var(--fs-body);line-height:var(--lh-body);letter-spacing:var(--letter-spacing);word-break:keep-all;-webkit-font-smoothing:antialiased;height:100%;}
+button{font-family:var(--font-base);cursor:pointer;border:none;background:none;}
+input,select,textarea{font-family:var(--font-base);font-size:var(--fs-sm);color:var(--text-primary);}
+a{text-decoration:none;color:inherit;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:3px;}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px;}
+
+/* ── 차량번호 전용 폰트 클래스 ── */
+/* 한글+숫자 혼용 → Pretendard 유지, 번호판 스타일 적용 */
+.carno {
+  font-family: var(--font-base);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  background: var(--color-surface-2);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+  line-height: 1.6;
+}
+.carno-plain {
+  font-family: var(--font-base);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+/* ── 페이지 ── */
+.page{display:none;}
+.page.on{display:block;}
+
+/* ═══ 로그인 ═══ */
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#0D1B3E 0%,#0A2878 60%,#0047FF 100%);}
+.login-box{width:400px;background:var(--color-bg-page);border-radius:var(--radius-md);overflow:hidden;box-shadow:0 24px 60px rgba(0,71,255,.25);}
+.login-brand{background:var(--color-primary);padding:28px 32px 24px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+.login-logo{height:36px;object-fit:contain;filter:brightness(0) invert(1);}
+.login-brand-sub{font-size:var(--fs-xs);color:rgba(255,255,255,.65);letter-spacing:.04em;text-align:center;}
+.login-body{padding:28px 32px 32px;}
+.login-body h2{font-size:var(--fs-h2);font-weight:700;color:var(--text-primary);margin-bottom:4px;}
+.login-body p{font-size:var(--fs-xs);color:var(--text-muted);margin-bottom:22px;}
+.login-demo{margin-top:18px;padding:12px 14px;background:var(--color-surface-1);border-radius:var(--radius);font-size:var(--fs-xs);color:var(--text-secondary);line-height:1.9;border:1px solid var(--color-border);}
+.login-demo strong{color:var(--text-primary);font-weight:600;}
+
+/* ═══ 폼 공통 ═══ */
+.form-field{margin-bottom:13px;}
+.form-field label{display:block;font-size:var(--fs-xs);font-weight:700;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+.form-field input,.form-field select{width:100%;height:var(--h-row);padding:0 11px;border:1.5px solid var(--color-border);border-radius:var(--radius-sm);font-size:var(--fs-sm);background:var(--color-bg-page);color:var(--text-primary);transition:border-color .15s;outline:none;}
+.form-field input:focus,.form-field select:focus{border-color:var(--color-primary);}
+.form-field textarea{width:100%;padding:9px 11px;border:1.5px solid var(--color-border);border-radius:var(--radius-sm);font-size:var(--fs-sm);background:var(--color-bg-page);color:var(--text-primary);resize:vertical;outline:none;line-height:1.65;}
+.form-field textarea:focus{border-color:var(--color-primary);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2) var(--space-3);}
+.form-grid .span2{grid-column:1/-1;}
+.section-label{font-size:var(--fs-xs);font-weight:700;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase;margin:22px 0 10px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--color-border);}
+.section-label:first-child{margin-top:0;}
+
+/* ═══ 앱 셸 ═══ */
+.shell{display:grid;grid-template-rows:var(--h-header) 1fr;grid-template-columns:var(--w-sidebar) 1fr;grid-template-areas:"hd hd""nb mn";height:100vh;overflow:hidden;}
+.hd{grid-area:hd;height:var(--h-header);display:grid;grid-template-columns:var(--w-sidebar) 1fr;border-bottom:1px solid var(--color-border);position:sticky;top:0;z-index:30;}
+.nb{grid-area:nb;height:calc(100vh - var(--h-header));overflow-y:auto;background:var(--color-surface-1);padding:14px 16px var(--space-5);border-right:1px solid var(--color-border);}
+.mn{grid-area:mn;background:var(--color-surface-1);overflow-y:auto;display:flex;flex-direction:column;height:calc(100vh - var(--h-header));}
+
+/* ─ 헤더 ─ */
+.hd__brand{background:var(--color-primary);display:flex;align-items:center;padding:0 18px;gap:10px;}
+.hd__logo-img{height:22px;object-fit:contain;filter:brightness(0) invert(1);}
+.hd__divider{width:1px;height:16px;background:rgba(255,255,255,.25);}
+.hd__sys-name{font-size:var(--fs-xs);color:rgba(255,255,255,.75);font-weight:600;letter-spacing:.02em;white-space:nowrap;}
+.hd__right{background:var(--color-bg-page);display:flex;align-items:center;justify-content:space-between;padding:0 18px;}
+.hd__title{font-size:var(--fs-sm);color:var(--text-secondary);font-weight:500;}
+.hd__acts{display:flex;align-items:center;gap:var(--space-2);}
+.hd__user{display:flex;align-items:center;gap:7px;font-size:var(--fs-xs);color:var(--text-secondary);}
+.hd__user-dot{width:26px;height:26px;border-radius:var(--radius-full);background:var(--color-primary);color:#fff;font-size:var(--fs-xs);font-weight:700;display:flex;align-items:center;justify-content:center;}
+.hd__btn{height:var(--h-row-sm);padding:0 12px;font-size:var(--fs-xs);font-weight:700;border:1px solid var(--color-border);background:var(--color-bg-page);color:var(--text-secondary);border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .15s;}
+.hd__btn:hover{border-color:var(--color-primary-muted);color:var(--text-primary);}
+.hd__btn--primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary);}
+.hd__btn--primary:hover{background:var(--color-primary-dark);}
+
+/* ─ 사이드바 ─ */
+.nb__card{background:var(--color-bg-page);border-radius:var(--radius);border:1px solid var(--color-border);overflow:hidden;margin-bottom:var(--space-2);}
+.nb__head{display:flex;align-items:center;gap:var(--space-2);padding:7px var(--space-3);background:var(--color-surface-1);border-bottom:1px solid var(--color-border);font-size:var(--fs-xs);font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;}
+.nb__list{padding:4px 0;}
+.nb__item{display:flex;align-items:center;gap:var(--space-2);padding:7px var(--space-3) 7px 26px;font-size:var(--fs-sm);color:var(--text-secondary);background:none;width:100%;font-family:var(--font-base);letter-spacing:var(--letter-spacing);cursor:pointer;transition:background .1s;position:relative;}
+.nb__item::before{content:'';position:absolute;left:12px;width:5px;height:5px;border-radius:50%;background:var(--color-border);}
+.nb__item:hover{background:var(--color-surface-1);color:var(--text-primary);}
+.nb__item.active{font-weight:700;color:var(--color-primary);}
+.nb__item.active::before{background:var(--color-primary);}
+.nb__badge{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:16px;padding:0 4px;border-radius:var(--radius-full);font-size:10px;font-weight:700;background:var(--color-primary);color:#fff;}
+
+/* ─ 스크린 ─ */
+.screen{display:none;flex-direction:column;flex:1;min-height:0;}
+.screen.on{display:flex;}
+
+/* ─ 탭바 ─ */
+.tab-bar{display:flex;align-items:flex-end;background:var(--color-surface-1);padding:var(--space-3) var(--space-3) 0 0;gap:2px;margin:0 var(--space-3);flex-shrink:0;}
+.tab{height:34px;padding:0 14px;font-size:var(--fs-sm);font-weight:400;color:var(--text-secondary);border:1px solid var(--color-border);border-bottom:none;background:var(--color-surface-2);border-radius:var(--radius-sm) var(--radius-sm) 0 0;display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;font-family:var(--font-base);letter-spacing:var(--letter-spacing);}
+.tab:hover{color:var(--text-primary);}
+.tab.active{height:36px;color:var(--color-primary);font-weight:700;background:var(--color-bg-page);border-bottom:2px solid var(--color-bg-page);margin-bottom:-2px;position:relative;z-index:2;}
+.tab-cnt{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:15px;padding:0 3px;border-radius:var(--radius-full);font-size:10px;font-weight:700;background:var(--color-surface-2);color:var(--text-secondary);}
+.tab.active .tab-cnt{background:var(--color-primary);color:#fff;}
+
+/* ─ 본문 래퍼 ─ */
+.mn__inner{background:var(--color-bg-page);flex:1;border:1px solid var(--color-border);border-radius:0 var(--radius) 0 0;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+.scroll-area{flex:1;overflow-y:auto;}
+.content-pad{padding:var(--space-4) var(--space-4) var(--space-6);}
+
+/* ─ 버튼 ─ */
+.btn{height:var(--h-row);padding:0 14px;font-size:var(--fs-sm);font-weight:700;border:1px solid var(--color-border);background:var(--color-bg-page);color:var(--text-secondary);border-radius:var(--radius);cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:var(--font-base);letter-spacing:var(--letter-spacing);transition:all .15s;white-space:nowrap;}
+.btn--primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary);}
+.btn--primary:hover{background:var(--color-primary-dark);border-color:var(--color-primary-dark);}
+.btn--secondary{color:var(--color-primary);border-color:var(--color-primary);}
+.btn--secondary:hover{background:var(--color-primary-bg);}
+.btn--ghost{color:var(--text-secondary);border-color:var(--color-border);}
+.btn--ghost:hover{border-color:var(--color-primary-muted);color:var(--text-primary);}
+.btn--danger{background:var(--color-danger);color:#fff;border-color:var(--color-danger);}
+.btn--success{background:var(--color-success);color:#fff;border-color:var(--color-success);}
+.btn--lg{height:var(--h-btn-lg);padding:0 var(--space-4);font-size:var(--fs-body);}
+.btn--sm{height:var(--h-row-sm);padding:0 10px;font-size:var(--fs-xs);}
+.btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
+
+/* ─ 배지 ─ */
+.badge{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 7px;font-size:var(--fs-xs);font-weight:700;border-radius:var(--radius-sm);}
+.badge--primary{background:var(--color-primary-bg);color:var(--color-primary);}
+.badge--success{background:var(--color-surface-3b);color:var(--color-success);}
+.badge--gray{background:var(--color-surface-2);color:var(--text-secondary);}
+.badge--warn{background:var(--color-warn-bg);color:var(--color-warn);}
+.badge--danger{background:var(--color-danger-bg);color:var(--color-danger);}
+.status-dot{width:5px;height:5px;border-radius:50%;display:inline-block;}
+.status-dot.ongoing{background:var(--color-warn);}
+.status-dot.closed{background:var(--color-success);}
+.status-dot.draft{background:var(--text-muted);}
+
+/* ─ 카드 ─ */
+.card{background:var(--color-bg-page);border:1px solid var(--color-border);border-radius:var(--radius);overflow:hidden;}
+.card__head{background:var(--color-surface-1);padding:9px var(--space-4);border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between;}
+.card__title{font-size:var(--fs-xs);font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;}
+.card__body{padding:var(--space-3) var(--space-4);}
+
+/* ─ KPI ─ */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-3);margin-bottom:var(--space-4);}
+.kpi{display:flex;flex-direction:column;gap:5px;padding:var(--space-3) var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius);background:var(--color-bg-page);transition:border-color .15s;}
+.kpi:hover{border-color:var(--color-primary-light);}
+.kpi__label{font-size:var(--fs-xs);font-weight:700;color:var(--text-muted);letter-spacing:.03em;}
+.kpi__value{font-size:28px;font-weight:700;line-height:1.1;color:var(--text-primary);letter-spacing:-1px;font-family:var(--font-base);}
+.kpi__value .unit{font-size:var(--fs-body);font-weight:400;color:var(--text-secondary);margin-left:2px;}
+.kpi__sub{font-size:var(--fs-xs);color:var(--text-muted);}
+.kpi--accent .kpi__value{color:var(--color-primary);}
+
+/* ─ 테이블 ─ */
+.tbl-wrap{border:1px solid var(--color-border);border-radius:var(--radius);overflow:hidden;}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl thead th{background:var(--color-surface-1);padding:0 14px;height:30px;font-size:var(--fs-xs);font-weight:700;color:var(--text-muted);text-align:left;letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid var(--color-border);white-space:nowrap;}
+.tbl tbody tr{border-bottom:1px solid var(--color-border);transition:background .1s;cursor:pointer;}
+.tbl tbody tr:last-child{border-bottom:none;}
+.tbl tbody tr:hover{background:var(--color-surface-1);}
+.tbl tbody td{padding:0 14px;height:40px;font-size:var(--fs-sm);color:var(--text-primary);white-space:nowrap;}
+.td-muted{color:var(--text-muted);font-size:var(--fs-xs);}
+
+/* ─ 업로드 ─ */
+.upload-zone{border:2px dashed var(--color-border);border-radius:var(--radius);padding:22px;text-align:center;cursor:pointer;transition:all .15s;background:var(--color-surface-1);}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--color-primary);background:var(--color-primary-bg);}
+.upload-zone__icon{font-size:22px;margin-bottom:7px;}
+.upload-zone__title{font-size:var(--fs-sm);font-weight:700;color:var(--text-primary);margin-bottom:3px;}
+.upload-zone__sub{font-size:var(--fs-xs);color:var(--text-muted);}
+.upload-files{margin-top:10px;display:flex;flex-direction:column;gap:5px;}
+.upload-file-item{display:flex;align-items:center;gap:7px;padding:7px 11px;background:var(--color-bg-page);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--text-secondary);}
+.upload-file-item .name{flex:1;color:var(--text-primary);font-weight:500;}
+.upload-file-item .rm{cursor:pointer;color:var(--text-muted);font-size:14px;line-height:1;}
+.upload-file-item .rm:hover{color:var(--color-danger);}
+
+/* ─ 업체 입찰 페이지 ─ */
+.bid-page{min-height:100vh;background:var(--color-surface-1);}
+.bid-header{background:var(--color-primary);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;}
+.bid-header-logo{height:24px;object-fit:contain;filter:brightness(0) invert(1);}
+.bid-header-right{display:flex;align-items:center;gap:12px;}
+.bid-header-user{font-size:var(--fs-xs);color:rgba(255,255,255,.8);}
+.bid-body{max-width:660px;margin:0 auto;padding:28px 16px 80px;}
+.bid-card{background:var(--color-bg-page);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,71,255,.06);}
+.bid-card__head{background:var(--color-surface-1);padding:10px 18px;border-bottom:1px solid var(--color-border);font-size:var(--fs-xs);font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;}
+.bid-card__body{padding:18px;}
+.veh-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.veh-info-item label{font-size:var(--fs-xs);color:var(--text-muted);display:block;margin-bottom:2px;}
+.veh-info-item value{font-size:var(--fs-sm);font-weight:600;color:var(--text-primary);}
+.deadline-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--color-warn-bg);border:1px solid #FDE68A;border-radius:var(--radius-sm);margin-bottom:14px;}
+.deadline-row .label{font-size:var(--fs-xs);color:#92400E;flex:1;}
+.countdown-badge{font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--color-danger);}
+.amount-input-wrap{position:relative;}
+.amount-input-wrap input{width:100%;height:54px;padding:0 46px 0 14px;border:2px solid var(--color-border);border-radius:var(--radius);font-size:20px;font-family:var(--font-base);font-weight:700;color:var(--text-primary);outline:none;transition:border-color .15s;letter-spacing:-0.5px;}
+.amount-input-wrap input:focus{border-color:var(--color-primary);}
+.amount-input-wrap .unit{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:var(--fs-sm);color:var(--text-muted);font-weight:600;}
+.amount-preview{margin-top:5px;font-size:var(--fs-xs);color:var(--color-primary);font-weight:600;min-height:17px;}
+.warning-note{background:var(--color-danger-bg);border:1px solid #FECACA;border-radius:var(--radius-sm);padding:10px 13px;font-size:var(--fs-xs);color:#B91C1C;line-height:1.65;margin-bottom:14px;}
+
+/* ─ 낙찰 결과 ─ */
+.bid-result-row{display:flex;align-items:center;gap:11px;padding:9px 14px;border-bottom:1px solid var(--color-border);font-size:var(--fs-sm);}
+.bid-result-row:last-child{border-bottom:none;}
+.bid-rank{width:26px;height:26px;border-radius:var(--radius-full);background:var(--color-surface-2);color:var(--text-muted);font-size:var(--fs-xs);font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.bid-rank.first{background:var(--color-primary);color:#fff;}
+.bid-amount{font-family:var(--font-base);font-weight:700;color:var(--text-primary);flex:1;font-size:13px;}
+.bid-amount.first{color:var(--color-primary);font-size:15px;}
+.bid-company{color:var(--text-secondary);font-size:var(--fs-xs);}
+.bid-time{color:var(--text-muted);font-size:var(--fs-xs);font-family:var(--font-mono);margin-left:auto;}
+
+/* ─ 드로어 ─ */
+.dp-overlay{display:none;position:fixed;inset:0;z-index:40;}
+.dp-overlay.open{display:flex;}
+.dp-back{flex:1;background:var(--color-overlay-sm);cursor:pointer;}
+.dp-panel{width:500px;background:var(--color-bg-page);border-left:1px solid var(--color-border);overflow-y:auto;transform:translateX(100%);transition:transform .22s ease-out;}
+.dp-overlay.open .dp-panel{transform:translateX(0);}
+.dp-hd{display:flex;align-items:center;padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border);gap:var(--space-3);position:sticky;top:0;background:var(--color-bg-page);z-index:1;}
+.dp-hd-title{font-size:var(--fs-h3);font-weight:700;color:var(--text-primary);flex:1;}
+.dp-close{width:26px;height:26px;border-radius:var(--radius-sm);background:var(--color-surface-1);border:1px solid var(--color-border);color:var(--text-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .15s;}
+.dp-close:hover{background:var(--color-primary-bg);color:var(--color-primary);}
+.dp-sec{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border);}
+.dp-sec:last-child{border-bottom:none;}
+.dp-sec h5{font-size:var(--fs-xs);font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:var(--space-2);}
+.dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);}
+.dp-field .lbl{font-size:var(--fs-xs);color:var(--text-muted);margin-bottom:2px;}
+.dp-field .val{font-size:var(--fs-sm);color:var(--text-primary);font-weight:500;}
+
+/* ─ 모달 ─ */
+.modal-ov{display:none;position:fixed;inset:0;background:var(--color-overlay);z-index:50;align-items:center;justify-content:center;}
+.modal-ov.open{display:flex;}
+.modal{background:var(--color-bg-page);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-4);width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,71,255,.15);}
+.modal h3{font-size:var(--fs-h3);font-weight:700;margin-bottom:3px;}
+.modal .modal-sub{font-size:var(--fs-xs);color:var(--text-muted);margin-bottom:var(--space-4);}
+.modal .mbtns{display:flex;gap:var(--space-2);justify-content:flex-end;margin-top:var(--space-4);}
+
+/* ─ 기타 ─ */
+.main-footer{padding:10px var(--space-4);border-top:1px solid var(--color-border);background:var(--color-bg-page);font-size:var(--fs-xs);color:var(--text-muted);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.toast{position:fixed;top:62px;right:var(--space-4);background:var(--color-bg-page);border:1px solid var(--color-border);border-radius:var(--radius);padding:9px 14px;font-size:var(--fs-xs);color:var(--text-primary);z-index:60;opacity:0;transform:translateY(-8px);transition:all .22s ease-out;pointer-events:none;max-width:280px;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,.08);}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.success{border-left:3px solid var(--color-success);}
+.toast.error{border-left:3px solid var(--color-danger);}
+.toast.info{border-left:3px solid var(--color-primary);}
+.toast.warn{border-left:3px solid var(--color-warn);}
+.empty-state{text-align:center;padding:var(--space-5) var(--space-4);color:var(--text-muted);}
+.empty-state h4{font-size:var(--fs-h3);color:var(--text-secondary);margin-bottom:8px;font-weight:700;}
+.empty-state p{font-size:var(--fs-xs);}
+.hidden{display:none!important;}
+.text-primary-color{color:var(--color-primary);}
+.text-success{color:var(--color-success);}
+.text-danger{color:var(--color-danger);}
+.text-muted{color:var(--text-muted);}
+.fw-mono{font-family:var(--font-mono);}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ─ 업체 입찰: 완료 상태 ─ */
+.bid-done-box{padding:16px;background:var(--color-surface-3b);border-radius:var(--radius);border:1px solid var(--color-secondary-light);text-align:center;}
+.bid-done-box .done-label{font-size:var(--fs-xs);color:var(--color-secondary-dark);font-weight:700;margin-bottom:4px;}
+.bid-done-box .done-amount{font-size:22px;font-weight:700;color:var(--color-primary);letter-spacing:-0.5px;margin-bottom:4px;}
+.bid-done-box .done-time{font-size:var(--fs-xs);color:var(--text-muted);font-family:var(--font-mono);}
+.bid-done-box .done-note{font-size:var(--fs-xs);color:var(--text-muted);margin-top:8px;line-height:1.6;}
+
+/* ─ 가이드 ─ */
+.guide-sec{padding-top:28px;margin-top:28px;border-top:1px solid var(--color-border);}
+.guide-sec:first-child{border-top:none;padding-top:0;margin-top:0;}
+.guide-sec-title{display:flex;align-items:center;gap:10px;font-size:var(--fs-h2);font-weight:700;color:var(--text-primary);margin-bottom:14px;}
+.guide-sec-title::before{content:"";display:block;width:3px;height:1em;background:var(--color-primary);flex-shrink:0;border-radius:2px;}
+.guide-content{font-size:var(--fs-sm);color:var(--text-secondary);line-height:1.8;}
+.guide-tip{background:var(--color-primary-bg);border:1px solid var(--color-primary-light);border-radius:var(--radius);padding:12px 14px;font-size:var(--fs-xs);color:var(--text-secondary);line-height:1.7;margin-top:10px;}
+.guide-tip strong{color:var(--color-primary);font-weight:700;}
+
+/* 차량번호 테이블에서 번호판 스타일 */
+.tbl .carno-cell {
+  font-family: var(--font-base);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  color: var(--text-primary);
+}
+.plate {
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: var(--font-base);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+</style>
+</head>
+<body>
+
+<!-- ══════ PAGE 0: 로그인 ══════ -->
+<div class="page on" id="pageLogin">
+  <div class="login-page">
+    <div class="login-box">
+      <div class="login-brand">
+        <img src="https://taksong-driver.openmile.kr/openlink.png" class="login-logo" alt="오픈링크" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <div style="display:none;font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.5px">오픈링크</div>
+        <div class="login-brand-sub">경쟁입찰시스템 · Competitive Bidding System</div>
+      </div>
+      <div class="login-body">
+        <h2>로그인</h2>
+        <p>아이디와 비밀번호를 입력하세요</p>
+        <div class="form-field">
+          <label>아이디</label>
+          <input type="text" id="loginId" placeholder="아이디 입력" value="admin" autocomplete="username">
+        </div>
+        <div class="form-field">
+          <label>비밀번호</label>
+          <input type="password" id="loginPw" placeholder="비밀번호 입력" value="1234" autocomplete="current-password">
+        </div>
+        <button class="btn btn--primary btn--lg" style="width:100%;margin-top:10px;border-radius:var(--radius)" onclick="doLogin()">로그인</button>
+        <div class="login-demo">
+          <strong>데모 계정</strong><br>
+          · 마스터 : admin / 1234<br>
+          · 담당자 : staff1 / 1234 (박시연)<br>
+          · 업체 카옥스 : vendor1 / 1234<br>
+          · 업체 제노모터스 : vendor2 / 1234
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE 1: 내부 앱 ══════ -->
+<div class="page" id="pageApp">
+  <div class="shell">
+    <header class="hd">
+      <div class="hd__brand">
+        <img src="https://taksong-driver.openmile.kr/openlink.png" class="hd__logo-img" alt="오픈링크" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div style="display:none;font-size:14px;font-weight:800;color:#fff;letter-spacing:-0.3px">오픈링크</div>
+        <div class="hd__divider"></div>
+        <span class="hd__sys-name">경쟁입찰시스템</span>
+      </div>
+      <div class="hd__right">
+        <span class="hd__title" id="appPageTitle">대시보드</span>
+        <div class="hd__acts">
+          <div class="hd__user">
+            <div class="hd__user-dot" id="userInitial">A</div>
+            <span id="userName">관리자</span>
+            <span class="badge badge--primary" id="userRoleBadge">마스터</span>
+          </div>
+          <button class="hd__btn" onclick="doLogout()">로그아웃</button>
+        </div>
+      </div>
+    </header>
+
+    <nav class="nb">
+      <div class="nb__card">
+        <div class="nb__head">입찰 관리</div>
+        <div class="nb__list">
+          <button class="nb__item active" id="nb-dash" onclick="goScreen('dash')">
+            대시보드
+            <span class="nb__badge" id="nb-ongoing-cnt">2</span>
+          </button>
+          <button class="nb__item" id="nb-list" onclick="goScreen('list')">입찰 목록</button>
+          <button class="nb__item" id="nb-new" onclick="goScreen('new')">신규 입찰 등록</button>
+        </div>
+      </div>
+      <div class="nb__card" id="nb-master-card">
+        <div class="nb__head">마스터 전용</div>
+        <div class="nb__list">
+          <button class="nb__item" id="nb-result" onclick="goScreen('result')">낙찰 결과 조회</button>
+          <button class="nb__item" id="nb-vendor" onclick="goScreen('vendor')">업체 관리</button>
+        </div>
+      </div>
+      <div class="nb__card">
+        <div class="nb__head">도움말</div>
+        <div class="nb__list">
+          <button class="nb__item" id="nb-guide" onclick="goScreen('guide')">사용 가이드</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="mn">
+
+      <!-- ▶ 대시보드 -->
+      <div class="screen on" id="sDash">
+        <div class="tab-bar">
+          <button class="tab active" id="dtab-overview" onclick="switchDashTab('overview',this)">현황 개요</button>
+          <button class="tab" id="dtab-ongoing" onclick="switchDashTab('ongoing',this)">진행 중 <span class="tab-cnt" id="dtab-cnt">2</span></button>
+        </div>
+        <div class="mn__inner">
+          <div class="scroll-area"><div class="content-pad" id="dashContent"></div></div>
+          <div class="main-footer">
+            <span>입찰금액 및 투찰 이력은 마스터 권한 계정에서만 열람 가능합니다.</span>
+            <span>오픈링크 경쟁입찰시스템 v1.0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ▶ 입찰 목록 -->
+      <div class="screen" id="sList">
+        <div class="tab-bar">
+          <button class="tab active" onclick="switchListTab('all',this)">전체</button>
+          <button class="tab" onclick="switchListTab('ongoing',this)">진행중</button>
+          <button class="tab" onclick="switchListTab('closed',this)">마감</button>
+        </div>
+        <div class="mn__inner">
+          <div style="padding:9px 16px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:8px;flex-shrink:0;background:var(--color-bg-page)">
+            <input style="height:30px;padding:0 9px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:var(--fs-xs);width:200px;outline:none;color:var(--text-primary)" placeholder="차량번호·차종 검색" oninput="filterList(this.value)">
+            <span style="font-size:var(--fs-xs);color:var(--text-muted);margin-left:auto" id="listCount">총 0건</span>
+          </div>
+          <div class="scroll-area">
+            <div class="tbl-wrap" style="border-radius:0;border:none">
+              <table class="tbl" id="auctionTbl">
+                <thead>
+                  <tr>
+                    <th>차량번호</th>
+                    <th>차종</th>
+                    <th>사고유형</th>
+                    <th>마감일시</th>
+                    <th>상태</th>
+                    <th>참여/발송</th>
+                    <th>담당자</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="auctionTblBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="main-footer"><span></span><span>오픈링크 경쟁입찰시스템 v1.0</span></div>
+        </div>
+      </div>
+
+      <!-- ▶ 신규 입찰 등록 -->
+      <div class="screen" id="sNew">
+        <div class="mn__inner" style="border-radius:0 var(--radius) 0 0">
+          <div style="padding:10px 16px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--color-bg-page)">
+            <span style="font-size:var(--fs-sm);font-weight:700">신규 입찰 등록</span>
+            <div style="display:flex;gap:7px">
+              <button class="btn btn--ghost btn--sm" onclick="resetNewForm()">초기화</button>
+              <button class="btn btn--primary btn--sm" onclick="submitNewAuction()">등록 및 발송</button>
+            </div>
+          </div>
+          <div class="scroll-area">
+            <div class="content-pad" style="max-width:700px">
+              <div class="section-label">차량 정보</div>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>차량번호 *</label>
+                  <input type="text" id="f-carno" placeholder="예) 169하5045">
+                </div>
+                <div class="form-field">
+                  <label>차종 *</label>
+                  <input type="text" id="f-carname" placeholder="예) 쏘렌토">
+                </div>
+                <div class="form-field">
+                  <label>연식</label>
+                  <input type="text" id="f-year" placeholder="예) 2021년식">
+                </div>
+                <div class="form-field">
+                  <label>연료</label>
+                  <select id="f-fuel"><option>디젤</option><option>가솔린</option><option>전기</option><option>LPG</option><option>하이브리드</option></select>
+                </div>
+                <div class="form-field">
+                  <label>사고유형</label>
+                  <select id="f-acctype"><option>충돌사고</option><option>침수</option><option>화재</option><option>기타전손</option></select>
+                </div>
+                <div class="form-field">
+                  <label>보관장소</label>
+                  <input type="text" id="f-location" placeholder="예) 경기 포천시 가산면">
+                </div>
+                <div class="form-field span2">
+                  <label>비고 / 특이사항</label>
+                  <textarea id="f-note" rows="2" placeholder="손해 상황, 특이사항 등 업체에 전달할 내용"></textarea>
+                </div>
+              </div>
+
+              <div class="section-label">손해 정보</div>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>손해배상액 (원)</label>
+                  <input type="text" id="f-damage" placeholder="예) 17,580,036">
+                </div>
+                <div class="form-field">
+                  <label>손해평가 기관</label>
+                  <input type="text" id="f-evalorg" placeholder="예) 카옥스">
+                </div>
+              </div>
+
+              <div class="section-label">사진 첨부</div>
+              <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="handleDrag(event,true)" ondragleave="handleDrag(event,false)" ondrop="handleDrop(event)">
+                <div class="upload-zone__icon">📷</div>
+                <div class="upload-zone__title">차량 사진 업로드</div>
+                <div class="upload-zone__sub">클릭하거나 드래그 · JPG, PNG · 최대 10MB</div>
+                <input type="file" id="fileInput" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
+              </div>
+              <div class="upload-files" id="uploadFileList"></div>
+              <div style="margin-top:6px;font-size:var(--fs-xs);color:var(--text-muted)">※ 실제 운영 시 Google Drive 자동 저장</div>
+
+              <div class="section-label">입찰 설정</div>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>입찰 마감일시 *</label>
+                  <input type="datetime-local" id="f-deadline">
+                </div>
+                <div class="form-field">
+                  <label>최저 입찰가 (선택)</label>
+                  <input type="text" id="f-minbid" placeholder="설정 안 하면 제한 없음">
+                </div>
+              </div>
+
+              <div class="section-label">발송 업체 선택</div>
+              <div style="font-size:var(--fs-xs);color:var(--text-muted);margin-bottom:9px">선택한 업체에게 입찰 참여 링크와 문자가 발송됩니다.</div>
+              <div id="vendorCheckList" style="display:flex;flex-direction:column;gap:5px"></div>
+            </div>
+          </div>
+          <div class="main-footer"><span></span><span>오픈링크 경쟁입찰시스템 v1.0</span></div>
+        </div>
+      </div>
+
+      <!-- ▶ 낙찰 결과 (마스터) -->
+      <div class="screen" id="sResult">
+        <div class="mn__inner">
+          <div style="padding:10px 16px;border-bottom:1px solid var(--color-border);font-size:var(--fs-sm);font-weight:700;flex-shrink:0;background:var(--color-bg-page);display:flex;align-items:center;gap:8px">
+            낙찰 결과 조회 <span class="badge badge--primary">마스터 전용</span>
+          </div>
+          <div class="scroll-area"><div class="content-pad" id="resultContent"></div></div>
+          <div class="main-footer"><span>입찰 금액 및 투찰 시각은 마스터 계정에서만 열람 가능합니다.</span><span>오픈링크 경쟁입찰시스템 v1.0</span></div>
+        </div>
+      </div>
+
+      <!-- ▶ 업체 관리 -->
+      <div class="screen" id="sVendor">
+        <div class="mn__inner">
+          <div style="padding:10px 16px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--color-bg-page)">
+            <span style="font-size:var(--fs-sm);font-weight:700">업체 관리</span>
+            <button class="btn btn--primary btn--sm" onclick="openAddVendorModal()">+ 업체 추가</button>
+          </div>
+          <div class="scroll-area">
+            <div class="content-pad">
+              <div class="tbl-wrap">
+                <table class="tbl" id="vendorTbl">
+                  <thead>
+                    <tr><th>업체명</th><th>아이디</th><th>담당자</th><th>연락처</th><th>참여</th><th>낙찰</th><th>상태</th><th></th></tr>
+                  </thead>
+                  <tbody id="vendorTblBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="main-footer"><span></span><span>오픈링크 경쟁입찰시스템 v1.0</span></div>
+        </div>
+      </div>
+
+      <!-- ▶ 사용 가이드 -->
+      <div class="screen" id="sGuide">
+        <div class="mn__inner" style="overflow-y:auto">
+          <div class="content-pad" style="max-width:700px">
+            <div style="font-size:var(--fs-h1);font-weight:700;margin-bottom:4px">사용 가이드</div>
+            <div style="font-size:var(--fs-xs);color:var(--text-muted);margin-bottom:32px">오픈링크 경쟁입찰시스템 운영 안내</div>
+            <div class="guide-sec">
+              <div class="guide-sec-title">01 · 입찰 등록 흐름</div>
+              <div class="guide-content">전손 확정 → <strong>신규 입찰 등록</strong> (차량정보·사진·마감일 설정) → 업체 선택 후 <strong>링크·문자 자동 발송</strong> → 업체 온라인 입찰 → <strong>마감 후 자동 개찰</strong> → 낙찰 결과 확인</div>
+            </div>
+            <div class="guide-sec">
+              <div class="guide-sec-title">02 · 권한 구조</div>
+              <div class="tbl-wrap" style="margin-top:0">
+                <table class="tbl">
+                  <thead><tr><th>기능</th><th>마스터</th><th>담당자</th><th>업체</th></tr></thead>
+                  <tbody>
+                    <tr><td>입찰 등록</td><td class="text-success">✓</td><td class="text-success">✓</td><td>—</td></tr>
+                    <tr><td>입찰금액 조회</td><td class="text-success">✓</td><td class="text-danger">✗</td><td>—</td></tr>
+                    <tr><td>낙찰 결과</td><td class="text-success">✓</td><td class="text-danger">✗</td><td>—</td></tr>
+                    <tr><td>업체 관리</td><td class="text-success">✓</td><td class="text-danger">✗</td><td>—</td></tr>
+                    <tr><td>입찰 참여</td><td>—</td><td>—</td><td class="text-success">✓</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══════ PAGE 2: 업체 입찰 화면 ══════ -->
+<div class="page" id="pageVendor">
+  <div class="bid-page">
+    <div class="bid-header">
+      <img src="https://taksong-driver.openmile.kr/openlink.png" class="bid-header-logo" alt="오픈링크" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <div style="display:none;font-size:14px;font-weight:800;color:#fff">오픈링크</div>
+      <div class="bid-header-right">
+        <span class="bid-header-user" id="vendorWelcome"></span>
+        <button class="hd__btn" style="color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.1)" onclick="doLogout()">로그아웃</button>
+      </div>
+    </div>
+    <div class="bid-body" id="bidBody"></div>
+  </div>
+</div>
+
+<!-- ══════ 드로어 ══════ -->
+<div class="dp-overlay" id="dpOverlay">
+  <div class="dp-back" onclick="closeDP()"></div>
+  <div class="dp-panel" id="dpPanel"></div>
+</div>
+
+<!-- ══════ 모달: 업체 추가 ══════ -->
+<div class="modal-ov" id="addVendorModal">
+  <div class="modal">
+    <h3>업체 추가</h3>
+    <div class="modal-sub">신규 매각업체 계정을 등록합니다</div>
+    <div class="form-field"><label>업체명 *</label><input type="text" id="mv-name" placeholder="예) 카옥스"></div>
+    <div class="form-field"><label>아이디 *</label><input type="text" id="mv-id" placeholder="로그인 아이디"></div>
+    <div class="form-field"><label>초기 비밀번호 *</label><input type="text" id="mv-pw" placeholder="초기 비밀번호"></div>
+    <div class="form-field"><label>담당자명</label><input type="text" id="mv-contact" placeholder="담당자 이름"></div>
+    <div class="form-field"><label>연락처 (문자 수신)</label><input type="text" id="mv-phone" placeholder="010-0000-0000"></div>
+    <div class="mbtns">
+      <button class="btn btn--ghost" onclick="closeModal('addVendorModal')">취소</button>
+      <button class="btn btn--primary" onclick="addVendor()">등록</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════ 데이터 ══════
+const USERS = [
+  {id:'admin',  pw:'1234',role:'master',name:'관리자', initial:'관'},
+  {id:'staff1', pw:'1234',role:'staff', name:'박시연', initial:'박'},
+  {id:'vendor1',pw:'1234',role:'vendor',name:'카옥스',   vendorId:'V001'},
+  {id:'vendor2',pw:'1234',role:'vendor',name:'제노모터스',vendorId:'V002'},
+  {id:'vendor3',pw:'1234',role:'vendor',name:'해피카',   vendorId:'V003'},
+  {id:'vendor4',pw:'1234',role:'vendor',name:'오픈마일', vendorId:'V004'},
+];
+
+let VENDORS = [
+  {id:'V001',name:'카옥스',   loginId:'vendor1',contact:'최수현',phone:'010-0000-1111',bids:8,wins:3,active:true},
+  {id:'V002',name:'제노모터스',loginId:'vendor2',contact:'최광수',phone:'010-9479-4344',bids:6,wins:2,active:true},
+  {id:'V003',name:'해피카',   loginId:'vendor3',contact:'김순미',phone:'010-6850-0335',bids:5,wins:1,active:true},
+  {id:'V004',name:'오픈마일', loginId:'vendor4',contact:'김종문',phone:'010-5177-5394',bids:4,wins:0,active:true},
+  {id:'V005',name:'듀오카',   loginId:'vendor5',contact:'김지승',phone:'010-5393-7329',bids:3,wins:1,active:true},
+  {id:'V006',name:'리카온',   loginId:'vendor6',contact:'김명현',phone:'010-0000-9999',bids:2,wins:0,active:false},
+];
+
+let AUCTIONS = [
+  {
+    id:'A001',carno:'169하5045',carname:'쏘렌토',year:'2021년식',fuel:'디젤',acctype:'충돌사고',
+    location:'경기 포천시 가산면',damage:17580036,evalorg:'카옥스',
+    note:'폐차대상차량. 전면부 심각한 파손.',
+    deadline:'2026-04-10T18:00',status:'closed',staff:'박시연',
+    vendors:['V001','V002','V003','V004','V005','V006'],
+    photos:['car_front.jpg','car_rear.jpg'],createdAt:'2026-04-09 09:30',
+    bids:[
+      {vendorId:'V001',name:'카옥스',   amount:7470000,time:'2026-04-10 14:22:31'},
+      {vendorId:'V002',name:'제노모터스',amount:7200000,time:'2026-04-10 11:05:17'},
+      {vendorId:'V003',name:'해피카',   amount:4500000,time:'2026-04-10 09:48:54'},
+      {vendorId:'V004',name:'오픈마일', amount:4500000,time:'2026-04-10 10:31:08'},
+      {vendorId:'V005',name:'듀오카',   amount:3100000,time:'2026-04-10 15:50:42'},
+      {vendorId:'V006',name:'리카온',   amount:3000000,time:'2026-04-09 16:12:05'},
+    ]
+  },
+  {
+    id:'A002',carno:'312나7821',carname:'그랜저',year:'2020년식',fuel:'가솔린',acctype:'충돌사고',
+    location:'서울 강서구 화곡동',damage:22100000,evalorg:'해피카',
+    note:'전손 처리 확정. 에어백 전개.',
+    deadline:(()=>{const d=new Date();d.setDate(d.getDate()+1);d.setHours(18,0,0,0);return d.toISOString().slice(0,16);})(),
+    status:'ongoing',staff:'박시연',
+    vendors:['V001','V002','V003','V004'],
+    photos:['grand_front.jpg'],createdAt:'2026-04-20 14:10',
+    bids:[
+      {vendorId:'V001',name:'카옥스',   amount:9800000,time:'2026-04-21 10:14:22'},
+      {vendorId:'V003',name:'해피카',   amount:8500000,time:'2026-04-21 13:55:30'},
+    ]
+  },
+  {
+    id:'A003',carno:'451바2233',carname:'K5',year:'2022년식',fuel:'가솔린',acctype:'화재',
+    location:'경기 수원시 영통구',damage:18900000,evalorg:'제노모터스',
+    note:'화재로 인한 전소.',
+    deadline:(()=>{const d=new Date();d.setDate(d.getDate()+3);d.setHours(17,0,0,0);return d.toISOString().slice(0,16);})(),
+    status:'ongoing',staff:'관리자',
+    vendors:['V001','V002','V003'],
+    photos:[],createdAt:'2026-04-21 09:00',bids:[]
+  },
+];
+
+// ══════ 상태 ══════
+let currentUser=null, currentScreen='dash', listFilter='all', listSearch='', uploadedFiles=[];
+
+// ══════ 로그인 ══════
+function doLogin(){
+  const id=document.getElementById('loginId').value.trim();
+  const pw=document.getElementById('loginPw').value.trim();
+  const user=USERS.find(u=>u.id===id&&u.pw===pw);
+  if(!user){toast('아이디 또는 비밀번호가 올바르지 않습니다.','error');return;}
+  currentUser=user;
+  document.getElementById('pageLogin').classList.remove('on');
+  if(user.role==='vendor'){
+    document.getElementById('pageVendor').classList.add('on');
+    renderVendorPage();
+  } else {
+    document.getElementById('pageApp').classList.add('on');
+    document.getElementById('userName').textContent=user.name;
+    document.getElementById('userInitial').textContent=user.initial;
+    document.getElementById('userRoleBadge').textContent=user.role==='master'?'마스터':'담당자';
+    document.getElementById('nb-master-card').style.display=user.role==='master'?'':'none';
+    goScreen('dash');
+    toast(`${user.name}님, 환영합니다.`,'success');
+  }
+}
+
+function doLogout(){
+  currentUser=null;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pageLogin').classList.add('on');
+  toast('로그아웃되었습니다.','info');
+}
+
+// ══════ 화면 전환 ══════
+function goScreen(s){
+  currentScreen=s;
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('on'));
+  document.querySelectorAll('.nb__item').forEach(el=>el.classList.remove('active'));
+  const sm={dash:'sDash',list:'sList',new:'sNew',result:'sResult',vendor:'sVendor',guide:'sGuide'};
+  const nm={dash:'nb-dash',list:'nb-list',new:'nb-new',result:'nb-result',vendor:'nb-vendor',guide:'nb-guide'};
+  const tm={dash:'대시보드',list:'입찰 목록',new:'신규 입찰 등록',result:'낙찰 결과 조회',vendor:'업체 관리',guide:'사용 가이드'};
+  document.getElementById(sm[s])?.classList.add('on');
+  if(nm[s])document.getElementById(nm[s])?.classList.add('active');
+  document.getElementById('appPageTitle').textContent=tm[s]||'';
+  if(s==='dash')renderDash('overview');
+  if(s==='list')renderList();
+  if(s==='new')renderNewForm();
+  if(s==='result')renderResult();
+  if(s==='vendor')renderVendorTbl();
+}
+
+function switchDashTab(tab,btn){
+  document.querySelectorAll('#sDash .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderDash(tab);
+}
+function switchListTab(tab,btn){
+  listFilter=tab;
+  document.querySelectorAll('#sList .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+// ══════ 대시보드 ══════
+function renderDash(tab){
+  const el=document.getElementById('dashContent');
+  const ongoing=AUCTIONS.filter(a=>a.status==='ongoing');
+  const closed=AUCTIONS.filter(a=>a.status==='closed');
+  const totalBids=AUCTIONS.reduce((s,a)=>s+a.bids.length,0);
+  document.getElementById('dtab-cnt').textContent=ongoing.length;
+  document.getElementById('nb-ongoing-cnt').textContent=ongoing.length;
+
+  if(tab==='overview'){
+    el.innerHTML=`
+      <div class="kpi-grid">
+        <div class="kpi kpi--accent"><div class="kpi__label">진행 중 입찰</div><div class="kpi__value">${ongoing.length}<span class="unit">건</span></div><div class="kpi__sub">마감 전 입찰 건</div></div>
+        <div class="kpi"><div class="kpi__label">완료 입찰</div><div class="kpi__value">${closed.length}<span class="unit">건</span></div><div class="kpi__sub">낙찰 처리 완료</div></div>
+        <div class="kpi"><div class="kpi__label">총 투찰 수</div><div class="kpi__value">${totalBids}<span class="unit">건</span></div><div class="kpi__sub">누적 업체 투찰</div></div>
+        <div class="kpi"><div class="kpi__label">활성 업체</div><div class="kpi__value">${VENDORS.filter(v=>v.active).length}<span class="unit">개</span></div><div class="kpi__sub">등록 업체 기준</div></div>
+      </div>
+      <div style="font-size:var(--fs-xs);font-weight:700;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">최근 입찰 현황</div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>차량번호</th><th>차종</th><th>마감일시</th><th>상태</th><th>참여/발송</th><th>담당자</th></tr></thead>
+          <tbody>
+            ${AUCTIONS.map(a=>`
+              <tr onclick="openDP('${a.id}')">
+                <td><span class="plate">${a.carno}</span></td>
+                <td style="font-weight:500">${a.carname}</td>
+                <td class="td-muted fw-mono">${a.deadline.replace('T',' ')}</td>
+                <td>${statusBadge(a.status)}</td>
+                <td class="td-muted">${a.bids.length} / ${a.vendors.length}개</td>
+                <td class="td-muted">${a.staff}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  } else {
+    if(!ongoing.length){el.innerHTML=`<div class="empty-state"><h4>진행 중인 입찰 없음</h4><p>신규 입찰을 등록하세요.</p></div>`;return;}
+    el.innerHTML=ongoing.map(a=>{
+      const remain=Math.max(0,Math.floor((new Date(a.deadline)-new Date())/60000));
+      const hh=Math.floor(remain/60),mm=remain%60;
+      return `
+        <div class="card" style="margin-bottom:14px;cursor:pointer" onclick="openDP('${a.id}')">
+          <div class="card__head">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="plate">${a.carno}</span>
+              <span style="font-size:var(--fs-sm);font-weight:600">${a.carname}</span>
+              ${statusBadge(a.status)}
+            </div>
+            <span style="font-size:var(--fs-xs);color:var(--color-danger);font-weight:700;font-family:var(--font-mono)">⏱ ${hh}h ${mm}m 남음</span>
+          </div>
+          <div class="card__body">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;font-size:var(--fs-xs)">
+              <div><div style="color:var(--text-muted);margin-bottom:2px">보관장소</div><div style="font-weight:500">${a.location||'-'}</div></div>
+              <div><div style="color:var(--text-muted);margin-bottom:2px">마감일시</div><div style="font-weight:500;font-family:var(--font-mono)">${a.deadline.replace('T',' ')}</div></div>
+              <div><div style="color:var(--text-muted);margin-bottom:2px">투찰 현황</div><div style="font-weight:500">${a.bids.length}개 업체 참여</div></div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+}
+
+// ══════ 입찰 목록 ══════
+function renderList(){
+  let data=AUCTIONS;
+  if(listFilter!=='all')data=data.filter(a=>a.status===listFilter);
+  if(listSearch)data=data.filter(a=>a.carno.includes(listSearch)||a.carname.includes(listSearch));
+  document.getElementById('listCount').textContent=`총 ${data.length}건`;
+  document.getElementById('auctionTblBody').innerHTML=data.map(a=>`
+    <tr onclick="openDP('${a.id}')">
+      <td><span class="plate">${a.carno}</span></td>
+      <td style="font-weight:500">${a.carname}</td>
+      <td class="td-muted">${a.acctype}</td>
+      <td class="td-muted fw-mono">${a.deadline.replace('T',' ')}</td>
+      <td>${statusBadge(a.status)}</td>
+      <td class="td-muted">${a.bids.length} / ${a.vendors.length}</td>
+      <td class="td-muted">${a.staff}</td>
+      <td><button class="btn btn--ghost btn--sm" onclick="event.stopPropagation();openDP('${a.id}')">상세</button></td>
+    </tr>`).join('');
+}
+function filterList(v){listSearch=v;renderList();}
+
+// ══════ 신규 등록 ══════
+function renderNewForm(){
+  uploadedFiles=[];
+  document.getElementById('uploadFileList').innerHTML='';
+  ['f-carno','f-carname','f-year','f-note','f-damage','f-evalorg','f-minbid'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  const d=new Date();d.setDate(d.getDate()+3);d.setHours(18,0,0,0);
+  document.getElementById('f-deadline').value=d.toISOString().slice(0,16);
+  document.getElementById('vendorCheckList').innerHTML=VENDORS.filter(v=>v.active).map(v=>`
+    <label style="display:flex;align-items:center;gap:8px;padding:8px 11px;border:1px solid var(--color-border);border-radius:var(--radius-sm);cursor:pointer;font-size:var(--fs-sm);background:var(--color-bg-page)">
+      <input type="checkbox" value="${v.id}" checked style="accent-color:var(--color-primary);width:13px;height:13px">
+      <span style="font-weight:600">${v.name}</span>
+      <span style="color:var(--text-muted);font-size:var(--fs-xs)">${v.contact} · ${v.phone}</span>
+    </label>`).join('');
+}
+function handleFiles(files){[...files].forEach(f=>{if(!uploadedFiles.find(x=>x.name===f.name))uploadedFiles.push(f);});renderFileList();}
+function handleDrag(e,over){e.preventDefault();document.getElementById('uploadZone').classList.toggle('drag',over);}
+function handleDrop(e){e.preventDefault();document.getElementById('uploadZone').classList.remove('drag');handleFiles(e.dataTransfer.files);}
+function renderFileList(){document.getElementById('uploadFileList').innerHTML=uploadedFiles.map((f,i)=>`
+  <div class="upload-file-item">
+    <span>📷</span><span class="name">${f.name}</span>
+    <span class="td-muted">${(f.size/1024).toFixed(0)} KB</span>
+    <span class="rm" onclick="removeFile(${i})">✕</span>
+  </div>`).join('');}
+function removeFile(i){uploadedFiles.splice(i,1);renderFileList();}
+function resetNewForm(){renderNewForm();}
+
+function submitNewAuction(){
+  const carno=document.getElementById('f-carno').value.trim();
+  const carname=document.getElementById('f-carname').value.trim();
+  const deadline=document.getElementById('f-deadline').value;
+  if(!carno||!carname||!deadline){toast('차량번호, 차종, 마감일시는 필수입니다.','error');return;}
+  const checked=[...document.querySelectorAll('#vendorCheckList input:checked')].map(el=>el.value);
+  if(!checked.length){toast('발송할 업체를 1개 이상 선택하세요.','error');return;}
+  const newId='A'+String(AUCTIONS.length+1).padStart(3,'0');
+  const now=new Date().toLocaleString('ko-KR',{hour12:false}).slice(0,16);
+  AUCTIONS.unshift({
+    id:newId,carno,carname,
+    year:document.getElementById('f-year').value||'',
+    fuel:document.getElementById('f-fuel').value,
+    acctype:document.getElementById('f-acctype').value,
+    location:document.getElementById('f-location').value,
+    damage:parseInt((document.getElementById('f-damage').value||'0').replace(/,/g,''))||0,
+    evalorg:document.getElementById('f-evalorg').value,
+    note:document.getElementById('f-note').value,
+    deadline,status:'ongoing',staff:currentUser.name,
+    vendors:checked,photos:uploadedFiles.map(f=>f.name),
+    createdAt:now,bids:[]
+  });
+  toast(`입찰 등록 완료! ${checked.length}개 업체에 링크가 발송되었습니다.`,'success');
+  goScreen('list');
+}
+
+// ══════ 낙찰 결과 ══════
+function renderResult(){
+  if(currentUser?.role!=='master'){
+    document.getElementById('resultContent').innerHTML=`<div class="empty-state"><h4>접근 권한 없음</h4><p>마스터 계정에서만 열람 가능합니다.</p></div>`;return;
+  }
+  const closed=AUCTIONS.filter(a=>a.status==='closed');
+  document.getElementById('resultContent').innerHTML=closed.length?closed.map(a=>{
+    const sorted=[...a.bids].sort((x,y)=>y.amount-x.amount);
+    const winner=sorted[0];
+    return `
+      <div class="card" style="margin-bottom:18px">
+        <div class="card__head">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="plate">${a.carno}</span>
+            <span style="font-size:var(--fs-sm);font-weight:600">${a.carname}</span>
+            ${statusBadge(a.status)}
+          </div>
+          <span style="font-size:var(--fs-xs);color:var(--text-muted)">마감 ${a.deadline.replace('T',' ')}</span>
+        </div>
+        <div class="card__body" style="padding:0">
+          ${winner?`
+            <div style="padding:14px 18px;border-bottom:1px solid var(--color-border);background:var(--color-surface-3b);display:flex;align-items:center;gap:12px">
+              <span style="font-size:var(--fs-xs);font-weight:700;color:var(--color-secondary-dark)">🏆 낙찰</span>
+              <span style="font-size:17px;font-weight:700;color:var(--color-primary)">${winner.amount.toLocaleString()}원</span>
+              <span style="font-size:var(--fs-sm);color:var(--text-secondary)">${winner.name}</span>
+              <span style="font-size:var(--fs-xs);color:var(--text-muted);margin-left:auto;font-family:var(--font-mono)">${winner.time}</span>
+            </div>`:''}
+          ${sorted.map((b,i)=>`
+            <div class="bid-result-row">
+              <div class="bid-rank ${i===0?'first':''}">${i+1}</div>
+              <div class="bid-amount ${i===0?'first':''}">${b.amount.toLocaleString()}원</div>
+              <div class="bid-company">${b.name}</div>
+              <div class="bid-time">${b.time}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }).join(''):`<div class="empty-state"><h4>마감된 입찰 없음</h4></div>`;
+}
+
+// ══════ 업체 관리 ══════
+function renderVendorTbl(){
+  document.getElementById('vendorTblBody').innerHTML=VENDORS.map(v=>`
+    <tr>
+      <td style="font-weight:600">${v.name}</td>
+      <td class="td-muted">${v.loginId}</td>
+      <td class="td-muted">${v.contact||'-'}</td>
+      <td class="td-muted">${v.phone||'-'}</td>
+      <td class="td-muted">${v.bids}</td>
+      <td class="td-muted">${v.wins}</td>
+      <td>${v.active?'<span class="badge badge--success">활성</span>':'<span class="badge badge--gray">비활성</span>'}</td>
+      <td><button class="btn btn--ghost btn--sm" onclick="toggleVendor('${v.id}')">${v.active?'비활성화':'활성화'}</button></td>
+    </tr>`).join('');
+}
+function openAddVendorModal(){document.getElementById('addVendorModal').classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function addVendor(){
+  const name=document.getElementById('mv-name').value.trim();
+  const lid=document.getElementById('mv-id').value.trim();
+  const pw=document.getElementById('mv-pw').value.trim();
+  if(!name||!lid||!pw){toast('업체명, 아이디, 비밀번호는 필수입니다.','error');return;}
+  const vid='V'+String(VENDORS.length+1).padStart(3,'0');
+  VENDORS.push({id:vid,name,loginId:lid,contact:document.getElementById('mv-contact').value,phone:document.getElementById('mv-phone').value,bids:0,wins:0,active:true});
+  USERS.push({id:lid,pw,role:'vendor',name,vendorId:vid});
+  closeModal('addVendorModal');
+  renderVendorTbl();
+  toast(`${name} 업체가 등록되었습니다.`,'success');
+}
+function toggleVendor(vid){
+  const v=VENDORS.find(x=>x.id===vid);
+  if(v){v.active=!v.active;renderVendorTbl();toast(`${v.name} 상태가 변경되었습니다.`,'info');}
+}
+
+// ══════ 드로어 ══════
+function openDP(aid){
+  const a=AUCTIONS.find(x=>x.id===aid);if(!a)return;
+  const isMaster=currentUser?.role==='master';
+  const sorted=[...a.bids].sort((x,y)=>y.amount-x.amount);
+  document.getElementById('dpPanel').innerHTML=`
+    <div class="dp-hd">
+      <div style="display:flex;align-items:center;gap:8px;flex:1">
+        <span class="plate">${a.carno}</span>
+        <span class="dp-hd-title">${a.carname}</span>
+        ${statusBadge(a.status)}
+      </div>
+      <div class="dp-close" onclick="closeDP()">✕</div>
+    </div>
+    <div class="dp-sec">
+      <h5>차량 정보</h5>
+      <div class="dp-grid">
+        <div class="dp-field"><div class="lbl">차량번호</div><div class="val"><span class="plate">${a.carno}</span></div></div>
+        <div class="dp-field"><div class="lbl">차종</div><div class="val">${a.carname} (${a.year||'-'})</div></div>
+        <div class="dp-field"><div class="lbl">연료</div><div class="val">${a.fuel}</div></div>
+        <div class="dp-field"><div class="lbl">사고유형</div><div class="val">${a.acctype}</div></div>
+        <div class="dp-field"><div class="lbl">보관장소</div><div class="val">${a.location||'-'}</div></div>
+        <div class="dp-field"><div class="lbl">손해배상액</div><div class="val">${a.damage?a.damage.toLocaleString()+'원':'-'}</div></div>
+      </div>
+      ${a.note?`<div style="margin-top:10px;padding:9px 11px;background:var(--color-surface-1);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--text-secondary);line-height:1.7">${a.note}</div>`:''}
+    </div>
+    <div class="dp-sec">
+      <h5>입찰 현황</h5>
+      <div style="display:flex;gap:14px;font-size:var(--fs-xs);margin-bottom:11px;flex-wrap:wrap">
+        <div><span style="color:var(--text-muted)">마감 </span><span class="fw-mono">${a.deadline.replace('T',' ')}</span></div>
+        <div><span style="color:var(--text-muted)">참여 </span><span style="font-weight:700">${a.bids.length}/${a.vendors.length}개</span></div>
+        <div><span style="color:var(--text-muted)">등록 </span><span>${a.createdAt}</span></div>
+      </div>
+      ${a.bids.length===0?'<div style="font-size:var(--fs-xs);color:var(--text-muted);padding:6px 0">아직 투찰한 업체가 없습니다.</div>':
+        isMaster?`
+          <div style="border:1px solid var(--color-border);border-radius:var(--radius-sm);overflow:hidden">
+            ${sorted.map((b,i)=>`
+              <div class="bid-result-row">
+                <div class="bid-rank ${i===0?'first':''}">${i+1}</div>
+                <div class="bid-amount ${i===0?'first':''}">${b.amount.toLocaleString()}원</div>
+                <div class="bid-company">${b.name}</div>
+                <div class="bid-time">${b.time}</div>
+              </div>`).join('')}
+          </div>
+          ${a.status==='closed'?`<div style="margin-top:9px;padding:9px 12px;background:var(--color-surface-3b);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--color-secondary-dark);font-weight:700">🏆 낙찰: ${sorted[0].name} · ${sorted[0].amount.toLocaleString()}원</div>`:''}
+        `:`<div style="padding:14px;background:var(--color-surface-1);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--text-muted);text-align:center">입찰 금액은 마스터 권한에서만 열람 가능합니다.<br>현재 <strong style="color:var(--text-primary)">${a.bids.length}개 업체</strong>가 투찰하였습니다.</div>`
+      }
+    </div>
+    <div class="dp-sec">
+      <h5>첨부 사진</h5>
+      ${a.photos.length?`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px">${a.photos.map(()=>`<div style="background:var(--color-surface-2);border-radius:var(--radius-sm);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid var(--color-border)">🚗</div>`).join('')}</div><div style="margin-top:6px;font-size:var(--fs-xs);color:var(--text-muted)">${a.photos.length}장 첨부 · 실제 운영 시 Google Drive 연동</div>`:'<div style="font-size:var(--fs-xs);color:var(--text-muted)">첨부된 사진 없음</div>'}
+    </div>
+    ${a.status==='ongoing'&&isMaster?`
+    <div class="dp-sec">
+      <h5>작업</h5>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn--success btn--sm" onclick="closeAuction('${a.id}')">입찰 마감 처리</button>
+        <button class="btn btn--ghost btn--sm" onclick="copyLink('${a.id}')">링크 복사</button>
+      </div>
+    </div>`:''}
+  `;
+  document.getElementById('dpOverlay').classList.add('open');
+}
+function closeDP(){document.getElementById('dpOverlay').classList.remove('open');}
+function closeAuction(aid){
+  const a=AUCTIONS.find(x=>x.id===aid);
+  if(a){a.status='closed';closeDP();toast('입찰이 마감 처리되었습니다.','success');renderList();}
+}
+function copyLink(aid){toast('입찰 링크가 클립보드에 복사되었습니다.','success');}
+
+// ══════ 업체 입찰 페이지 ══════
+function renderVendorPage(){
+  const vid=currentUser.vendorId;
+  const vName=currentUser.name;
+  document.getElementById('vendorWelcome').textContent=`${vName}님 · 입찰 참여`;
+  const myAuctions=AUCTIONS.filter(a=>a.vendors.includes(vid)&&a.status==='ongoing');
+  const myBids=AUCTIONS.flatMap(a=>a.bids.filter(b=>b.vendorId===vid).map(b=>({...b,carno:a.carno,carname:a.carname,status:a.status})));
+  const el=document.getElementById('bidBody');
+
+  el.innerHTML=`
+    <div style="margin-bottom:22px">
+      <div style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:3px">안녕하세요, ${vName}님</div>
+      <div style="font-size:var(--fs-sm);color:var(--text-secondary)">참여 가능한 입찰 건을 확인하고 견적을 제출해 주세요.</div>
+    </div>
+    ${!myAuctions.length?`<div class="bid-card"><div class="bid-card__body" style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:var(--fs-sm)">현재 참여 가능한 입찰이 없습니다.</div></div>`:''}
+    ${myAuctions.map(a=>{
+      const alreadyBid=a.bids.find(b=>b.vendorId===vid);
+      const remain=Math.max(0,Math.floor((new Date(a.deadline)-new Date())/60000));
+      const hh=Math.floor(remain/60),mm=remain%60;
+      return `
+        <div class="bid-card" style="margin-bottom:14px">
+          <div class="bid-card__head">
+            <div style="display:flex;align-items:center;gap:7px">
+              <span class="plate">${a.carno}</span>
+              <span>${a.carname} · ${a.year||''}</span>
+            </div>
+            <span style="color:var(--color-danger);font-size:var(--fs-xs);font-weight:700">⏱ ${hh}h ${mm}m 남음</span>
+          </div>
+          <div class="bid-card__body">
+            <div class="veh-info-grid" style="margin-bottom:14px">
+              <div class="veh-info-item"><label>차량번호</label><value><span class="plate">${a.carno}</span></value></div>
+              <div class="veh-info-item"><label>차종</label><value>${a.carname} (${a.year||'-'})</value></div>
+              <div class="veh-info-item"><label>연료</label><value>${a.fuel}</value></div>
+              <div class="veh-info-item"><label>사고유형</label><value>${a.acctype}</value></div>
+              <div class="veh-info-item"><label>보관장소</label><value>${a.location||'-'}</value></div>
+              <div class="veh-info-item"><label>마감일시</label><value style="font-family:var(--font-mono)">${a.deadline.replace('T',' ')}</value></div>
+            </div>
+            ${a.note?`<div style="padding:9px 11px;background:var(--color-surface-1);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--text-secondary);margin-bottom:14px;line-height:1.7">${a.note}</div>`:''}
+            ${alreadyBid?`
+              <div class="bid-done-box">
+                <div class="done-label">✓ 투찰 완료</div>
+                <div class="done-amount">${alreadyBid.amount.toLocaleString()}원</div>
+                <div class="done-time">${alreadyBid.time}</div>
+                <div class="done-note">제출 후 수정이 불가합니다. 결과는 마감 후 통보됩니다.</div>
+              </div>
+            `:`
+              <div class="warning-note">⚠ 금액 제출 후 수정이 불가합니다. 신중하게 입력하세요.</div>
+              <div style="margin-bottom:7px;font-size:var(--fs-xs);font-weight:700;color:var(--text-muted);letter-spacing:.05em;text-transform:uppercase">입찰 금액 (VAT 포함)</div>
+              <div class="amount-input-wrap" style="margin-bottom:5px">
+                <input type="number" id="bid-amt-${a.id}" placeholder="0" oninput="previewAmt('${a.id}',this.value)" min="0">
+                <span class="unit">원</span>
+              </div>
+              <div class="amount-preview" id="bid-prev-${a.id}"></div>
+              <button class="btn btn--primary btn--lg" style="width:100%;margin-top:14px;border-radius:var(--radius)" onclick="submitBid('${a.id}','${vid}','${vName}')">입찰 금액 제출</button>
+            `}
+          </div>
+        </div>`;
+    }).join('')}
+    ${myBids.length?`
+      <div style="font-size:var(--fs-xs);font-weight:700;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;margin:22px 0 9px">투찰 이력</div>
+      <div class="bid-card">
+        <div class="bid-card__body" style="padding:0">
+          ${myBids.map(b=>`
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 18px;border-bottom:1px solid var(--color-border);font-size:var(--fs-sm)">
+              <span class="plate">${b.carno}</span>
+              <span style="font-weight:500">${b.carname}</span>
+              <span style="margin-left:auto;font-weight:700;color:var(--color-primary)">${b.amount.toLocaleString()}원</span>
+              <span style="color:var(--text-muted);font-size:var(--fs-xs);font-family:var(--font-mono)">${b.time}</span>
+            </div>`).join('')}
+        </div>
+      </div>`:''}
+  `;
+}
+
+function previewAmt(aid,v){
+  const n=parseInt(v)||0;
+  document.getElementById(`bid-prev-${aid}`).textContent=n?`${n.toLocaleString()}원 (VAT 포함)`:'';
+}
+
+function submitBid(aid,vid,vName){
+  const a=AUCTIONS.find(x=>x.id===aid);
+  const amt=parseInt(document.getElementById(`bid-amt-${aid}`)?.value)||0;
+  if(!amt||amt<=0){toast('금액을 올바르게 입력하세요.','error');return;}
+  if(confirm(`${amt.toLocaleString()}원으로 입찰 제출하시겠습니까?\n\n제출 후 수정이 불가합니다.`)){
+    const ts=new Date().toLocaleString('ko-KR',{hour12:false}).slice(0,19);
+    a.bids.push({vendorId:vid,name:vName,amount:amt,time:ts});
+    toast('입찰이 성공적으로 제출되었습니다.','success');
+    renderVendorPage();
+  }
+}
+
+// ══════ 헬퍼 ══════
+function statusBadge(s){
+  return {
+    ongoing:'<span class="badge badge--warn"><span class="status-dot ongoing"></span>진행중</span>',
+    closed:'<span class="badge badge--success"><span class="status-dot closed"></span>마감</span>',
+    draft:'<span class="badge badge--gray"><span class="status-dot draft"></span>임시저장</span>'
+  }[s]||'';
+}
+
+let toastTimer;
+function toast(msg,type='info'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className=`toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),3200);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('pageLogin').classList.contains('on'))doLogin();
+  if(e.key==='Escape')closeDP();
+});
+</script>
+</body>
+</html>

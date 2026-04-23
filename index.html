@@ -255,6 +255,27 @@ a{text-decoration:none;color:inherit;}
 .empty-state h4{font-size:var(--fs-h3);color:var(--text-s);margin-bottom:8px;font-weight:700;}
 .empty-state p{font-size:var(--fs-xs);}
 
+/* ── 사진 뷰어 ── */
+.photo-viewer-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:100;flex-direction:column;align-items:center;justify-content:center;}
+.photo-viewer-ov.open{display:flex;}
+.photo-viewer-img{max-width:88vw;max-height:78vh;object-fit:contain;border-radius:var(--radius);box-shadow:0 8px 48px rgba(0,0,0,.5);transition:opacity .2s;}
+.photo-viewer-ctrl{display:flex;align-items:center;gap:16px;margin-top:16px;}
+.photo-viewer-btn{width:44px;height:44px;border-radius:var(--radius-full);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;}
+.photo-viewer-btn:hover{background:rgba(255,255,255,.28);}
+.photo-viewer-close{position:absolute;top:18px;right:22px;width:36px;height:36px;border-radius:var(--radius-full);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.photo-viewer-close:hover{background:rgba(255,255,255,.28);}
+.photo-viewer-counter{color:rgba(255,255,255,.7);font-size:var(--fs-xs);min-width:60px;text-align:center;}
+.photo-viewer-name{color:rgba(255,255,255,.6);font-size:var(--fs-xs);margin-top:8px;max-width:80vw;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.photo-thumb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
+.photo-thumb{position:relative;border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:4/3;cursor:pointer;background:var(--color-s2);border:2px solid transparent;transition:border-color .15s;}
+.photo-thumb:hover{border-color:var(--color-p);}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.photo-thumb-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-m);}
+.photo-thumb-overlay{position:absolute;inset:0;background:rgba(0,71,255,.0);transition:background .15s;display:flex;align-items:center;justify-content:center;}
+.photo-thumb:hover .photo-thumb-overlay{background:rgba(0,71,255,.18);}
+.doc-link-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--color-s1);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--text-s);text-decoration:none;transition:background .15s;}
+.doc-link-item:hover{background:var(--color-pbg);color:var(--color-p);}
+
 /* ── 담당자 결과 열람 (블라인드 박스) ── */
 .blind-box{padding:14px;background:var(--color-s1);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--text-m);text-align:center;line-height:1.7;}
 .blind-box strong{color:var(--text-p);}
@@ -537,6 +558,18 @@ a{text-decoration:none;color:inherit;}
 
 <div class="toast" id="toast"></div>
 
+<!-- ══ 사진 뷰어 ══ -->
+<div class="photo-viewer-ov" id="photoViewerOv" onclick="handleViewerBgClick(event)">
+  <div class="photo-viewer-close" onclick="closePhotoViewer()">✕</div>
+  <img class="photo-viewer-img" id="viewerImg" src="" alt="">
+  <div class="photo-viewer-name" id="viewerName"></div>
+  <div class="photo-viewer-ctrl">
+    <div class="photo-viewer-btn" onclick="viewerPrev()">‹</div>
+    <div class="photo-viewer-counter" id="viewerCounter">1 / 1</div>
+    <div class="photo-viewer-btn" onclick="viewerNext()">›</div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════════
 // ★ 설정값 — 실제 배포 시 반드시 교체
@@ -762,10 +795,31 @@ async function renderVendorBidPage(vendorId, auctionId) {
       ${(auction.PHOTOS || auction.DOCS) ? `
       <div class="bid-card" style="margin-bottom:14px">
         <div class="bid-card-head"><span>첨부 파일</span></div>
-        <div class="bid-card-body" style="font-size:var(--fs-xs);color:var(--text-m)">
-          ${auction.PHOTOS ? `📷 차량사진 (${auction.PHOTOS.split(',').filter(Boolean).length}장)` : ''}
-          ${auction.DOCS ? `&nbsp;&nbsp;📄 수리비견적서 첨부됨` : ''}
-          <div style="margin-top:8px;color:var(--text-m)">※ 실제 운영 시 Google Drive 링크로 제공됩니다.</div>
+        <div class="bid-card-body">
+          ${(() => {
+            const photos = parsePhotoUrls(auction.PHOTOS);
+            const docs   = parseDocUrls(auction.DOCS);
+            const photosJson = JSON.stringify(photos).replace(/'/g,"\\'");
+            let html = '';
+            if (photos.length) {
+              html += `<div style="margin-bottom:6px;font-size:var(--fs-xs);font-weight:700;color:var(--text-m)">📷 차량 사진 (${photos.length}장) — 클릭하여 확대</div>`;
+              html += `<div class="photo-thumb-grid">`;
+              photos.forEach((p,i) => {
+                html += `<div class="photo-thumb" onclick="openPhotoViewer(${photosJson},${i})">
+                  <img src="${p.url}" alt="${p.name}" onerror="this.parentElement.innerHTML='<div class=\\'photo-thumb-placeholder\\'>🚗</div>'">
+                  <div class="photo-thumb-overlay">🔍</div>
+                </div>`;
+              });
+              html += '</div>';
+            }
+            if (docs.length) {
+              html += `<div style="margin-top:10px;margin-bottom:6px;font-size:var(--fs-xs);font-weight:700;color:var(--text-m)">📄 수리비 견적서</div>`;
+              docs.forEach((d,i) => {
+                html += `<a class="doc-link-item" href="${d}" target="_blank" rel="noopener">📄 견적서 ${i+1} 열기 →</a>`;
+              });
+            }
+            return html;
+          })()}
         </div>
       </div>` : ''}
 
@@ -1081,9 +1135,25 @@ async function renderNewForm() {
   }
 }
 
+// ══ 파일 → Base64 변환 헬퍼 ══
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 function handleFiles(files, type) {
+  const MAX = 5 * 1024 * 1024; // 5MB
   const arr = type === 'photo' ? uploadedPhotos : uploadedDocs;
-  [...files].forEach(f => { if (!arr.find(x=>x.name===f.name)) arr.push(f); });
+  let skipped = 0;
+  [...files].forEach(f => {
+    if (f.size > MAX) { skipped++; return; }
+    if (!arr.find(x => x.name === f.name)) arr.push(f);
+  });
+  if (skipped) toast(`${skipped}개 파일이 5MB를 초과하여 제외되었습니다.`, 'warn');
   renderFileList(type);
 }
 function handleDrag(e, type, over) { e.preventDefault(); }
@@ -1091,13 +1161,16 @@ function handleDrop(e, type) { e.preventDefault(); handleFiles(e.dataTransfer.fi
 function renderFileList(type) {
   const arr = type === 'photo' ? uploadedPhotos : uploadedDocs;
   const listId = type === 'photo' ? 'photoList' : 'docList';
-  document.getElementById(listId).innerHTML = arr.map((f,i) => `
-    <div class="upload-file-item">
-      <span>${type==='photo'?'📷':'📄'}</span>
+  document.getElementById(listId).innerHTML = arr.map((f,i) => {
+    const isImg = f.type && f.type.startsWith('image/');
+    const preview = isImg ? `<img src="${URL.createObjectURL(f)}" style="width:36px;height:36px;object-fit:cover;border-radius:3px;margin-right:2px">` : '📄';
+    return `<div class="upload-file-item">
+      <span>${preview}</span>
       <span class="fname">${f.name}</span>
       <span class="td-m">${(f.size/1024).toFixed(0)}KB</span>
       <span class="frm" onclick="removeFile('${type}',${i})">✕</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function removeFile(type, i) {
   if (type==='photo') uploadedPhotos.splice(i,1); else uploadedDocs.splice(i,1);
@@ -1117,32 +1190,55 @@ async function submitNewAuction() {
   try {
     const data = {
       carno, carname,
-      year:  document.getElementById('f-year').value||'',
-      fuel:  document.getElementById('f-fuel').value,
-      acctype: document.getElementById('f-acctype').value,
+      year:     document.getElementById('f-year').value||'',
+      fuel:     document.getElementById('f-fuel').value,
+      acctype:  document.getElementById('f-acctype').value,
       location: document.getElementById('f-location').value,
-      damage: parseInt((document.getElementById('f-damage').value||'0').replace(/,/g,''))||0,
-      evalorg: document.getElementById('f-evalorg').value,
-      note: document.getElementById('f-note').value,
+      damage:   parseInt((document.getElementById('f-damage').value||'0').replace(/,/g,''))||0,
+      evalorg:  document.getElementById('f-evalorg').value,
+      note:     document.getElementById('f-note').value,
       deadline, staff: currentUser.name,
       vendors: checked,
       photos: uploadedPhotos.map(f=>f.name),
-      docs: uploadedDocs.map(f=>f.name),
+      docs:   uploadedDocs.map(f=>f.name),
     };
 
+    // 1단계: 입찰 건 등록
     const res = await apiPost({action:'createAuction', data});
     if (!res.ok) { toast(res.error||'등록 실패', 'err'); return; }
-
     const auctionId = res.id;
-    // 업체별 전용 URL 생성 (토큰 기반)
+
+    // 2단계: 파일이 있으면 Drive 업로드
+    const allFiles = [
+      ...uploadedPhotos.map(f=>({file:f, fileType:'photo'})),
+      ...uploadedDocs.map(f=>({file:f, fileType:'doc'})),
+    ];
+
+    if (allFiles.length > 0) {
+      setLoading(true, `파일 업로드 중... (0/${allFiles.length})`);
+      const filePayloads = [];
+      for (let i = 0; i < allFiles.length; i++) {
+        setLoading(true, `파일 업로드 중... (${i+1}/${allFiles.length})`);
+        const {file, fileType} = allFiles[i];
+        const base64 = await fileToBase64(file);
+        filePayloads.push({ name:file.name, data:base64, mimeType:file.type, fileType });
+      }
+      const uploadRes = await apiPost({ action:'uploadFiles', auctionId, files:filePayloads });
+      if (uploadRes.ok) {
+        toast(`입찰 등록 + 파일 ${uploadRes.uploaded.length}개 업로드 완료!`, 'ok');
+      } else {
+        toast('입찰 등록 완료. 파일 업로드 실패: ' + (uploadRes.error||''), 'warn');
+      }
+    } else {
+      toast(`입찰 등록 완료! ${checked.length}개 업체에 전용 링크가 발송됩니다.`, 'ok');
+    }
+
+    // 업체별 전용 URL 생성
     checked.forEach(vid => {
       const token = btoa(vid + '|' + auctionId).replace(/\+/g,'_').replace(/\//g,'-').replace(/=/g,'');
-      const bidUrl = `${HOSTING_URL}?token=${token}`;
-      console.log(`[${vid}] 입찰 링크: ${bidUrl}`);
-      // 모아샷 문자 발송은 Apps Script에서 처리
+      console.log(`[${vid}] 입찰 링크: ${HOSTING_URL}?token=${token}`);
     });
 
-    toast(`입찰 등록 완료! ${checked.length}개 업체에 전용 링크가 발송됩니다.`, 'ok');
     await goScreen('list');
   } catch(e) {
     toast('등록 중 오류가 발생했습니다: ' + e.message, 'err');
@@ -1325,11 +1421,31 @@ async function openDP(aid) {
     </div>
     <div class="dp-sec">
       <h5>첨부 파일</h5>
-      ${(a.PHOTOS||a.DOCS) ? `
-        ${a.PHOTOS?`<div style="font-size:var(--fs-xs);color:var(--text-s);margin-bottom:6px">📷 차량사진 ${a.PHOTOS.split(',').filter(Boolean).length}장</div>`:''}
-        ${a.DOCS?`<div style="font-size:var(--fs-xs);color:var(--text-s)">📄 수리비견적서 첨부됨</div>`:''}
-        <div style="margin-top:6px;font-size:var(--fs-xs);color:var(--text-m)">실제 운영 시 Google Drive 링크로 제공</div>
-      ` : '<div style="font-size:var(--fs-xs);color:var(--text-m)">첨부된 파일 없음</div>'}
+      ${(() => {
+        const photos = parsePhotoUrls(a.PHOTOS);
+        const docs   = parseDocUrls(a.DOCS);
+        const photosJson = JSON.stringify(photos).replace(/'/g,"\\'");
+        let html = '';
+        if (photos.length) {
+          html += `<div style="margin-bottom:8px;font-size:var(--fs-xs);font-weight:700;color:var(--text-m)">📷 차량 사진 (${photos.length}장)</div>`;
+          html += `<div class="photo-thumb-grid">`;
+          photos.forEach((p,i) => {
+            html += `<div class="photo-thumb" onclick="openPhotoViewer(${photosJson},${i})">
+              <img src="${p.url}" alt="${p.name}" onerror="this.parentElement.innerHTML='<div class=\\'photo-thumb-placeholder\\'>🚗</div>'">
+              <div class="photo-thumb-overlay">🔍</div>
+            </div>`;
+          });
+          html += `</div>`;
+        }
+        if (docs.length) {
+          html += `<div style="margin-top:10px;margin-bottom:6px;font-size:var(--fs-xs);font-weight:700;color:var(--text-m)">📄 수리비 견적서 (${docs.length}건)</div>`;
+          docs.forEach((d,i) => {
+            html += `<a class="doc-link-item" href="${d}" target="_blank" rel="noopener">📄 견적서 ${i+1} 열기 →</a>`;
+          });
+        }
+        if (!photos.length && !docs.length) html = '<div style="font-size:var(--fs-xs);color:var(--text-m)">첨부된 파일 없음</div>';
+        return html;
+      })()}
     </div>
     ${a.STATUS==='ongoing' && isMaster ? `
     <div class="dp-sec">
@@ -1398,9 +1514,70 @@ function toast(msg, type='info') {
   toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
 }
 
+// ══ 사진 뷰어 ══
+let viewerPhotos = [], viewerIdx = 0;
+
+function openPhotoViewer(photos, startIdx=0) {
+  viewerPhotos = photos.filter(Boolean);
+  if (!viewerPhotos.length) return;
+  viewerIdx = startIdx;
+  renderViewer();
+  document.getElementById('photoViewerOv').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePhotoViewer() {
+  document.getElementById('photoViewerOv').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleViewerBgClick(e) {
+  if (e.target === document.getElementById('photoViewerOv')) closePhotoViewer();
+}
+
+function renderViewer() {
+  const img = document.getElementById('viewerImg');
+  const photo = viewerPhotos[viewerIdx];
+  img.style.opacity = '0';
+  img.src = photo.url || photo;
+  img.onload = () => { img.style.opacity = '1'; };
+  document.getElementById('viewerName').textContent = photo.name || '';
+  document.getElementById('viewerCounter').textContent = `${viewerIdx+1} / ${viewerPhotos.length}`;
+}
+
+function viewerPrev() {
+  viewerIdx = (viewerIdx - 1 + viewerPhotos.length) % viewerPhotos.length;
+  renderViewer();
+}
+
+function viewerNext() {
+  viewerIdx = (viewerIdx + 1) % viewerPhotos.length;
+  renderViewer();
+}
+
+// 사진 URL 목록 파싱 (쉼표 구분 문자열 또는 배열)
+function parsePhotoUrls(photosVal) {
+  if (!photosVal) return [];
+  if (Array.isArray(photosVal)) return photosVal.filter(Boolean).map(u => ({url:u, name:u.split('/').pop()}));
+  return String(photosVal).split(',').filter(Boolean).map(u => ({url:u.trim(), name:u.trim().split('/').pop()}));
+}
+
+function parseDocUrls(docsVal) {
+  if (!docsVal) return [];
+  if (Array.isArray(docsVal)) return docsVal.filter(Boolean);
+  return String(docsVal).split(',').filter(Boolean).map(u => u.trim());
+}
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('pageLogin').classList.contains('on')) doLogin();
-  if (e.key === 'Escape') closeDP();
+  if (e.key === 'Escape') {
+    if (document.getElementById('photoViewerOv').classList.contains('open')) { closePhotoViewer(); return; }
+    closeDP();
+  }
+  if (document.getElementById('photoViewerOv').classList.contains('open')) {
+    if (e.key === 'ArrowLeft') viewerPrev();
+    if (e.key === 'ArrowRight') viewerNext();
+  }
 });
 </script>
 </body>

@@ -67,8 +67,10 @@ a{text-decoration:none;color:inherit;}
 .sec-label:first-child{margin-top:0;}
 
 /* ── 앱 셸 ── */
-.shell{display:grid;grid-template-rows:var(--h-header) 40px 1fr;grid-template-columns:var(--w-sidebar) 1fr;grid-template-areas:"hd hd""hd hd""nb mn";height:100vh;overflow:hidden;}
-.hd{grid-area:hd;display:flex;flex-direction:column;border-bottom:1px solid var(--color-border);position:sticky;top:0;z-index:30;}
+.shell{display:grid;grid-template-columns:var(--w-sidebar) 1fr;grid-template-rows:var(--h-header) 36px 1fr;grid-template-areas:"ci hd""ci tb""nb mn";height:100vh;overflow:hidden;}
+.ci-brand{grid-area:ci;background:var(--color-p);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:0 12px;position:sticky;top:0;z-index:31;}
+.hd{grid-area:hd;background:var(--color-bg);display:flex;align-items:center;justify-content:flex-end;padding:0 18px;border-bottom:1px solid var(--color-border);position:sticky;top:0;z-index:30;}
+.hd-tabbar{grid-area:tb;display:flex;align-items:flex-end;background:var(--color-s1);padding:5px 12px 0;gap:2px;overflow-x:auto;overflow-y:hidden;border-bottom:1px solid var(--color-border);border-left:1px solid var(--color-border);}
 .nb{grid-area:nb;overflow-y:auto;background:var(--color-s1);padding:14px 16px 48px;border-right:1px solid var(--color-border);}
 .mn{grid-area:mn;background:var(--color-s1);display:flex;flex-direction:column;overflow:hidden;}
 
@@ -330,37 +332,30 @@ a{text-decoration:none;color:inherit;}
 <!-- ══ PAGE 1: 내부 앱 ══ -->
 <div class="page" id="pageApp">
   <div class="shell">
+    <!-- CI 브랜드 (사이드바 전체 높이) -->
+    <div class="ci-brand">
+      <img src="https://taksong-driver.openmile.kr/openlink.png" class="hd-logo" alt="오픈링크"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <div style="display:none;font-size:17px;font-weight:800;color:#fff;letter-spacing:-.3px">오픈링크</div>
+      <span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:700;letter-spacing:.08em;text-align:center;white-space:nowrap">경쟁입찰시스템</span>
+    </div>
+
+    <!-- 헤더 (우측 상단) -->
     <header class="hd">
-      <!-- 헤더 상단 행 -->
-      <div style="display:grid;grid-template-columns:var(--w-sidebar) 1fr;height:var(--h-header);flex-shrink:0;">
-        <div class="hd-brand" style="display:flex;align-items:center;justify-content:center;">
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;padding:8px 0;">
-            <img src="https://taksong-driver.openmile.kr/openlink.png" class="hd-logo" alt="오픈링크"
-              onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-            <div style="display:none;font-size:17px;font-weight:800;color:#fff;letter-spacing:-.3px">오픈링크</div>
-            <span style="font-size:13px;color:rgba(255,255,255,.85);font-weight:700;letter-spacing:.08em;text-align:center;white-space:nowrap">경쟁입찰시스템</span>
-          </div>
+      <span id="appTitle" style="display:none">대시보드</span>
+      <div class="hd-acts">
+        <div class="hd-user">
+          <div class="hd-dot" id="userInitial">A</div>
+          <span id="userName">관리자</span>
+          <span class="badge badge-p" id="userRoleBadge">마스터</span>
         </div>
-        <div class="hd-right" style="justify-content:flex-end;">
-          <span class="hd-title" id="appTitle" style="display:none">대시보드</span>
-          <div class="hd-acts">
-            <div class="hd-user">
-              <div class="hd-dot" id="userInitial">A</div>
-              <span id="userName">관리자</span>
-              <span class="badge badge-p" id="userRoleBadge">마스터</span>
-            </div>
-            <button class="btn btn-g btn-sm" onclick="refreshScreen()" title="현재 화면 새로고침" style="padding:0 8px">↻</button>
-            <button class="btn btn-g btn-sm" onclick="doLogout()">로그아웃</button>
-          </div>
-        </div>
-      </div>
-      <!-- 탭바 행 -->
-      <div style="display:grid;grid-template-columns:var(--w-sidebar) 1fr;flex-shrink:0;min-height:36px;">
-        <div style="background:var(--color-p);"></div>
-        <div id="appTabBar" style="display:flex;align-items:flex-end;background:var(--color-s1);padding:5px 12px 0;gap:2px;overflow-x:auto;overflow-y:hidden;border-top:1px solid var(--color-border);border-left:1px solid var(--color-border);">
-        </div>
+        <button class="btn btn-g btn-sm" onclick="refreshScreen()" title="새로고침" style="padding:0 8px">↻</button>
+        <button class="btn btn-g btn-sm" onclick="doLogout()">로그아웃</button>
       </div>
     </header>
+
+    <!-- 탭바 (우측 두 번째 행) -->
+    <div class="hd-tabbar" id="appTabBar"></div>
 
     <nav class="nb">
       <div class="nb-card">
@@ -662,11 +657,11 @@ a{text-decoration:none;color:inherit;}
 
     </main>
   </div>
-</div>
-<!-- ══ 카피라이트 ══ -->
-<div class="app-copyright" id="appCopyright" style="display:none">
-  오픈링크주식회사 &nbsp;·&nbsp; 대표: 박경현 &nbsp;·&nbsp; 서울 송파구 올림픽로35길 123, 6층 &nbsp;·&nbsp; 사업자등록번호: 113-81-68227 &nbsp;·&nbsp; 대표전화: 1644-1199 &nbsp;·&nbsp; jdan@openmile.co.kr<br>
-  COPYRIGHT &copy; OPENLINK CO.,LTD. ALL RIGHTS RESERVED.
+  <!-- ══ 카피라이트 ══ -->
+  <div class="app-copyright" id="appCopyright" style="display:none;grid-column:2;grid-row:3;align-self:end;position:fixed;bottom:0;left:var(--w-sidebar);right:0;z-index:10;">
+    오픈링크주식회사 &nbsp;·&nbsp; 대표: 박경현 &nbsp;·&nbsp; 서울 송파구 올림픽로35길 123, 6층 &nbsp;·&nbsp; 사업자등록번호: 113-81-68227 &nbsp;·&nbsp; 대표전화: 1644-1199 &nbsp;·&nbsp; jdan@openmile.co.kr<br>
+    COPYRIGHT &copy; OPENLINK CO.,LTD. ALL RIGHTS RESERVED.
+  </div>
 </div>
 
 <!-- ══ PAGE 2: 업체 전용 입찰 페이지 (토큰 기반) ══ -->

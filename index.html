@@ -796,6 +796,7 @@ async function doLogin() {
     if (!res.ok) { toast(res.error || '아이디 또는 비밀번호가 올바르지 않습니다.', 'err'); return; }
 
     currentUser = res.user;
+sessionStorage.setItem('currentUser', JSON.stringify(res.user)); // ← 이 줄 추가
     document.getElementById('pageLogin').classList.remove('on');
 
     if (currentUser.role === 'vendor') {
@@ -825,6 +826,7 @@ async function doLogin() {
 
 function doLogout() {
   currentUser = null;
+sessionStorage.removeItem('currentUser'); // ← 이 줄 추가
   document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
   document.getElementById('pageLogin').classList.add('on');
   document.getElementById('loginId').value = '';
@@ -1815,13 +1817,40 @@ async function copyBidLink(auctionId) {
   navigator.clipboard.writeText(url).then(() => toast('첫 번째 업체 링크가 복사되었습니다.', 'ok'));
 }
 
-// ══ 페이지 로드 시 토큰 확인 ══
+// ══ 페이지 로드 시 토큰 확인 + 세션 복원 ══
 (function() {
   const token = new URLSearchParams(location.search).get('token');
   if (token) {
     document.getElementById('pageLogin').classList.remove('on');
     document.getElementById('pageVendor').classList.add('on');
     renderTokenPage(token);
+    return;
+  }
+
+  // 세션 복원
+  const saved = sessionStorage.getItem('currentUser');
+  if (saved) {
+    try {
+      currentUser = JSON.parse(saved);
+      document.getElementById('pageLogin').classList.remove('on');
+      if (currentUser.role === 'vendor') {
+        document.getElementById('pageVendor').classList.add('on');
+        renderVendorDirect(currentUser.vendorId);
+      } else {
+        document.getElementById('pageApp').classList.add('on');
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('userInitial').textContent = (currentUser.name||'?')[0];
+        document.getElementById('userRoleBadge').textContent = currentUser.role === 'master' ? '마스터' : '담당자';
+        document.getElementById('nb-master-card').style.display = currentUser.role === 'master' ? '' : 'none';
+        document.getElementById('appCopyright').style.display = 'block';
+        openTabs = ['dash'];
+        activeTab = 'dash';
+        renderTabBar();
+        goScreen('dash');
+      }
+    } catch(e) {
+      sessionStorage.removeItem('currentUser');
+    }
   }
 })();
 

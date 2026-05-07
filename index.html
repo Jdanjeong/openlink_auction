@@ -1549,10 +1549,24 @@ async function submitNewAuction() {
     }
 
     // 업체별 전용 URL 생성
-    checked.forEach(vid => {
-      const token = btoa(vid + '|' + auctionId).replace(/\+/g,'_').replace(/\//g,'-').replace(/=/g,'');
-      console.log(`[${vid}] 입찰 링크: ${HOSTING_URL}?token=${token}`);
-    });
+    // 업체별 전용 URL + 문자 발송
+const vendors = await getVendors();
+const vendorPhones = checked.map(vid => {
+  const v = vendors.find(x => (x.ID||x.id) === vid);
+  return { id: vid, phone: v?.PHONE || v?.phone || '' };
+}).filter(x => x.phone);
+
+// Workers에 문자 발송 요청
+if (vendorPhones.length > 0) {
+  await apiPost({
+    action: 'sendBidLinks',
+    auctionId,
+    carno: data.carno,
+    carname: data.carname,
+    deadline: data.deadline,
+    vendorPhones,
+  });
+}
 
     // 캐시 무효화 후 목록으로 이동
     screenLoaded.list = false;

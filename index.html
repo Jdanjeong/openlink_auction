@@ -1307,7 +1307,23 @@ async function renderDash(tab) {
     }).join('');
   }
 }
-
+async function deleteAuction(auctionId) {
+  if (!confirm('이 입찰 건을 삭제하시겠습니까?\n삭제 후 복구가 불가합니다.')) return;
+  setLoading(true, '삭제 중...');
+  try {
+    const res = await apiPost({ action:'deleteAuction', auctionId });
+    if (!res.ok) { toast(res.error || '삭제 실패', 'err'); return; }
+    toast('삭제되었습니다.', 'ok');
+    screenLoaded.list = false;
+    screenLoaded.dash = false;
+    await goScreen('list', true);
+  } catch(e) {
+    toast('삭제 중 오류가 발생했습니다.', 'err');
+  } finally {
+    setLoading(false);
+  }
+}
+  
 // ══════ 입찰 목록 ══════
 async function renderList() {
   const [data_all, bidsData] = await Promise.all([getAuctions(), getBidsAll()]);
@@ -1328,7 +1344,10 @@ async function renderList() {
           <td>${statusBadge(a.STATUS)}</td>
           <td class="td-m">${bidCount} / ${vendorCount}</td>
           <td class="td-m">${a.STAFF||''}</td>
-          <td><button class="btn btn-g btn-sm" onclick="event.stopPropagation();openDP('${a.ID}')">상세</button></td>
+          <td style="display:flex;gap:5px">
+  <button class="btn btn-g btn-sm" onclick="event.stopPropagation();openDP('${a.ID}')">상세</button>
+  ${currentUser?.role === 'master' ? `<button class="btn btn-err btn-sm" onclick="event.stopPropagation();deleteAuction('${a.ID}')">삭제</button>` : ''}
+</td>
         </tr>`;
       }).join('');
 }
@@ -1775,6 +1794,7 @@ async function openDP(aid) {
         <h5>작업</h5>
         <div style="display:flex;gap:7px">
           <button class="btn btn-ok btn-sm" onclick="closeAuction('${a.ID}')">입찰 마감 처리</button>
+          <button class="btn btn-err btn-sm" onclick="deleteAuction('${a.ID}');closeDP()">삭제</button>
           <button class="btn btn-g btn-sm" onclick="copyBidLink('${a.ID}')">업체 링크 복사</button>
         </div>
       </div>` : ''}
@@ -1999,3 +2019,5 @@ document.addEventListener('keydown', e => {
 </script>
 </body>
 </html>
+
+

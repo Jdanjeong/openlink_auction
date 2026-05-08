@@ -370,7 +370,7 @@ a{text-decoration:none;color:inherit;}
         <div class="nb-head">결과 조회</div>
         <div class="nb-list">
           <button class="nb-item" id="nb-result" onclick="goScreen('result')">낙찰 결과 조회</button>
-          <button class="nb-item" id="nb-vendor" onclick="goScreen('vendor')">업체 관리</button>
+          <button class="nb-item" id="nb-vendor" onclick="goScreen('vendor')" style="display:none" id="nb-vendor">업체 관리</button>
         </div>
       </div>
       <div class="nb-card">
@@ -832,6 +832,7 @@ sessionStorage.setItem('currentUser', JSON.stringify(res.user)); // ← 이 줄 
       document.getElementById('userInitial').textContent = (currentUser.name||'?')[0];
       document.getElementById('userRoleBadge').textContent = currentUser.role === 'master' ? '마스터' : '담당자';
       document.getElementById('nb-master-card').style.display = ['master','staff'].includes(currentUser.role) ? '' : 'none';
+document.getElementById('nb-vendor').style.display = currentUser.role === 'master' ? '' : 'none';
       // 탭 초기화
       openTabs = ['dash'];
       activeTab = 'dash';
@@ -995,6 +996,9 @@ const isDisabled = isClosed || alreadyBid;
 
     const el = document.getElementById('bidBody');
     el.innerHTML = `
+      <div style="margin-bottom:12px">
+        <button class="btn btn-g btn-sm" onclick="renderVendorDirect('${vendorId}')">← 목록으로</button>
+      </div>
       <div style="margin-bottom:24px;text-align:center;padding:20px 0 10px;">
         <div style="font-size:26px;font-weight:800;color:var(--text-p);margin-bottom:6px;letter-spacing:-.5px">잔존물 입찰 평가서</div>
         <div style="font-size:15px;color:var(--text-m)">아래 차량 정보를 확인하고 입찰 평가서를 작성해 주세요.</div>
@@ -1029,15 +1033,53 @@ const isDisabled = isClosed || alreadyBid;
       ${myBid ? `
       <!-- 이미 투찰 완료 -->
       <div class="bid-card">
-        <div class="bid-card-head"><span>입찰 평가서</span></div>
+        <div class="bid-card-head"><span>입찰 평가서</span><span class="badge badge-ok">✓ 투찰완료</span></div>
         <div class="bid-card-body">
-          <div class="bid-done-box">
-            <div class="done-label">✓ 투찰 완료</div>
-            <div class="done-amount">${Number(myBid.AMOUNT).toLocaleString()}원</div>
-            <div class="done-time">${myBid.SUBMITTED_AT}</div>
-            <div style="margin-top:10px;font-size:var(--fs-xs);color:var(--text-s)">평가구분: <strong>${myBid.EVAL_TYPE}</strong></div>
-            <div class="done-note">제출 후 수정이 불가합니다. 결과는 마감 후 담당자가 통보합니다.</div>
+
+          <div class="sec-label">가치평가 방법의 적용</div>
+          <div class="eval-text-box" style="margin-bottom:16px;line-height:2">
+            <p>본 차량은 차종과 등급, 연식, 현상, 사고 부위에 대한 수리비, 시중 거래가격, 보관 장소 등을 종합 참작하여 평가하였습니다.</p>
+            <br><p>상기 차량의 잔존가액을 아래와 같이 최고 입찰 금액을 전송합니다.</p>
           </div>
+
+          <div class="sec-label">평가구분 (입찰조건)</div>
+          <div class="eval-radio-group" style="pointer-events:none;opacity:.7">
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--color-pbg);border:1.5px solid var(--color-p);border-radius:var(--radius-sm);font-size:var(--fs-sm);font-weight:500;color:var(--color-p)">
+              <input type="radio" checked disabled style="accent-color:var(--color-p);width:14px;height:14px">
+              ${myBid.EVAL_TYPE}
+            </label>
+          </div>
+
+          <div class="sec-label" style="margin-top:16px">부대비용 (낙찰자 부담)</div>
+          <div class="ff">
+            <input type="text" value="${myBid.EVAL_NOTE?.replace('부대비용: ','') || '0원'}" disabled
+              style="width:100%;height:var(--h-row);padding:0 11px;border:1.5px solid var(--color-border);border-radius:var(--radius-sm);font-size:var(--fs-sm);background:var(--color-s1);color:var(--text-m);outline:none;">
+          </div>
+
+          <div class="sec-label">입찰 금액 (VAT 포함)</div>
+          <div class="amount-wrap" style="margin-bottom:6px">
+            <input type="number" value="${myBid.AMOUNT}" disabled
+              style="width:100%;height:54px;padding:0 46px 0 14px;border:2px solid var(--color-border);border-radius:var(--radius);font-size:20px;font-weight:700;color:var(--text-m);background:var(--color-s1);outline:none;">
+            <span class="unit">원</span>
+          </div>
+          <div style="font-size:var(--fs-xs);color:var(--color-p);font-weight:600;margin-bottom:16px">${Number(myBid.AMOUNT).toLocaleString()}원 (VAT 포함)</div>
+
+          <div class="sec-label">전손 동의</div>
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:12px 14px;background:var(--color-s3b);border:1.5px solid var(--color-secl);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--text-s);line-height:1.6;pointer-events:none;opacity:.8">
+            <input type="checkbox" checked disabled style="accent-color:var(--color-p);width:14px;height:14px;margin-top:1px;flex-shrink:0">
+            <span>본인은 상기 차량이 <strong>전손(Total Loss)</strong>으로 처리됨에 동의하며, 위 입찰금액으로 잔존물 매각에 참여합니다. 제출 후 취소 및 수정이 불가함을 확인합니다.</span>
+          </div>
+
+          <div style="margin-top:14px;padding:12px 16px;background:var(--color-s1);border-radius:var(--radius-sm);border:1px solid var(--color-border);font-size:var(--fs-xs);color:var(--text-m);line-height:1.7">
+            <div style="font-weight:700;color:var(--color-secd);margin-bottom:4px">✓ 투찰이 완료되었습니다</div>
+            <div>투찰 시각: ${myBid.SUBMITTED_AT}</div>
+            <div>결과는 마감 후 담당자가 통보합니다.</div>
+          </div>
+
+          <button class="btn btn-lg" disabled
+            style="width:100%;margin-top:16px;border-radius:var(--radius);justify-content:center;opacity:.4;cursor:not-allowed;background:var(--color-s2);color:var(--text-m);border-color:var(--color-border)">
+            ✓ 이미 투찰하셨습니다
+          </button>
         </div>
       </div>` : isClosed ? `
       <!-- 마감됨 -->
@@ -2053,6 +2095,7 @@ async function copyBidLink(auctionId) {
         document.getElementById('userInitial').textContent = (currentUser.name||'?')[0];
         document.getElementById('userRoleBadge').textContent = currentUser.role === 'master' ? '마스터' : '담당자';
         document.getElementById('nb-master-card').style.display = ['master','staff'].includes(currentUser.role) ? '' : 'none';
+document.getElementById('nb-vendor').style.display = currentUser.role === 'master' ? '' : 'none';
         document.getElementById('appCopyright').style.display = 'block';
         openTabs = ['dash'];
         activeTab = 'dash';

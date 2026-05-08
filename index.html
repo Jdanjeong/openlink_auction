@@ -840,19 +840,23 @@ sessionStorage.removeItem('currentUser'); // ← 이 줄 추가
 
 // ══ 토큰 URL 접속 처리 (로그인 없이 업체 전용 페이지) ══
 async function renderTokenPage(token) {
-  setLoading(false);
+  setLoading(true, '입찰 정보 로딩 중...');
   document.getElementById('pageLogin').classList.remove('on');
   document.getElementById('pageVendor').classList.add('on');
 
   let vendorId, auctionId;
   try {
-    // 토큰 복호화
-    const restored = token.replace(/_/g,'+').replace(/-/g,'/');
-    const decoded = atob(restored);
+    const restored = token.replace(/_/g, '+').replace(/-/g, '/');
+    const padded = restored + '=='.slice(0, (4 - restored.length % 4) % 4);
+    const decoded = atob(padded);
     const parts = decoded.split('|');
-    vendorId = parts[0]; auctionId = parts[1];
+    vendorId  = parts[0];
+    auctionId = parts[1];
+    if (!vendorId || !auctionId) throw new Error('파싱 실패');
   } catch(e) {
-    document.getElementById('bidBody').innerHTML = '<div class="empty-state"><h4>유효하지 않은 링크입니다</h4><p>담당자에게 문의하세요.</p></div>';
+    setLoading(false);
+    document.getElementById('bidBody').innerHTML =
+      '<div class="empty-state"><h4>유효하지 않은 링크입니다</h4><p>담당자에게 문의하세요.</p></div>';
     return;
   }
 

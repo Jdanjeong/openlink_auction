@@ -117,7 +117,7 @@ a{text-decoration:none;color:inherit;}
 .tab.active .tab-cnt{background:var(--color-p);color:#fff;}
 .mn-inner{background:var(--color-bg);flex:1;border:1px solid var(--color-border);border-top:none;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 .scroll-area{flex:1;overflow-y:auto;}
-.content-pad{padding:var(--space-4) var(--space-4) 80px;}
+.content-pad{padding:var(--space-4) var(--space-4) 120px;}
 .main-footer{padding:10px 20px;border-top:1px solid var(--color-border);background:var(--color-bg);font-size:var(--fs-xs);color:var(--text-m);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 
 /* ── 버튼 ── */
@@ -396,28 +396,43 @@ a{text-decoration:none;color:inherit;}
       </div>
 
       <!-- ▶ 입찰 목록 -->
-      <div class="screen" id="sList">
-        <div class="tab-bar">
-          <button class="tab active" onclick="switchListTab('all',this)">전체</button>
-          <button class="tab" onclick="switchListTab('ongoing',this)">진행중</button>
-          <button class="tab" onclick="switchListTab('closed',this)">마감</button>
-        </div>
-        <div class="mn-inner">
-          <div style="padding:9px 16px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:8px;flex-shrink:0;background:var(--color-bg)">
-            <input style="height:30px;padding:0 9px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:var(--fs-xs);width:200px;outline:none;color:var(--text-p)" placeholder="차량번호·차종 검색" oninput="filterList(this.value)">
-            <span style="font-size:var(--fs-xs);color:var(--text-m);margin-left:auto" id="listCount">총 0건</span>
-          </div>
-          <div class="scroll-area">
-            <div class="tbl-wrap" style="border-radius:0;border:none">
-              <table class="tbl">
-                <thead><tr><th>차량번호</th><th>차종</th><th>사고유형</th><th>마감일시</th><th>상태</th><th>참여/발송</th><th>담당자</th><th></th></tr></thead>
-                <tbody id="auctionTblBody"></tbody>
-              </table>
-            </div>
-          </div>
-          <div class="main-footer"><span></span><span>오픈링크 경쟁입찰시스템 v3.0</span></div>
-        </div>
+      <!-- ▶ 입찰 목록 -->
+<div class="screen" id="sList">
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchListTab('all',this)">전체</button>
+    <button class="tab" onclick="switchListTab('ongoing',this)">진행중</button>
+    <button class="tab" onclick="switchListTab('closed',this)">마감</button>
+  </div>
+  <div class="mn-inner">
+    <div style="padding:9px 16px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:8px;flex-shrink:0;background:var(--color-bg);flex-wrap:wrap">
+      <select id="listSearchField" style="height:30px;padding:0 8px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--text-p);background:var(--color-bg);outline:none" onchange="filterList(document.getElementById('listSearchInput').value)">
+        <option value="all">전체</option>
+        <option value="carno">차량번호</option>
+        <option value="carname">차종</option>
+        <option value="carowner">위탁사</option>
+        <option value="vendor">참여업체</option>
+        <option value="staff">담당자</option>
+      </select>
+      <input id="listSearchInput" style="height:30px;padding:0 9px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:var(--fs-xs);width:180px;outline:none;color:var(--text-p)" placeholder="검색어 입력" oninput="filterList(this.value)">
+      <span style="font-size:var(--fs-xs);color:var(--text-m);margin-left:auto" id="listCount">총 0건</span>
+      <select id="listPageSize" style="height:30px;padding:0 8px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:var(--fs-xs);color:var(--text-p);background:var(--color-bg);outline:none" onchange="renderList()">
+        <option value="10">10개</option>
+        <option value="20" selected>20개</option>
+        <option value="50">50개</option>
+        <option value="9999">전체</option>
+      </select>
+    </div>
+    <div class="scroll-area">
+      <div class="tbl-wrap" style="border-radius:0;border:none">
+        <table class="tbl">
+          <thead><tr><th>차량번호</th><th>위탁사</th><th>차종</th><th>사고유형</th><th>마감일시</th><th>상태</th><th>참여/발송</th><th>담당자</th><th></th></tr></thead>
+          <tbody id="auctionTblBody"></tbody>
+        </table>
       </div>
+    </div>
+    <div class="main-footer"><span></span><span>오픈링크 경쟁입찰시스템 v3.0</span></div>
+  </div>
+</div>
 
       <!-- ▶ 신규 입찰 등록 -->
       <div class="screen" id="sNew">
@@ -1391,16 +1406,45 @@ async function deleteAuction(auctionId) {
 async function renderList() {
   const [data_all, bidsData] = await Promise.all([getAuctions(), getBidsAll()]);
   let data = data_all;
+
+  // 탭 필터
   if (listFilter !== 'all') data = data.filter(a => a.STATUS === listFilter);
-  if (listSearch) data = data.filter(a => (a.CARNO||'').includes(listSearch) || (a.CARNAME||'').includes(listSearch));
-  document.getElementById('listCount').textContent = `총 ${data.length}건`;
+
+  // 검색 필터
+  const field = document.getElementById('listSearchField')?.value || 'all';
+  const keyword = listSearch.trim();
+  if (keyword) {
+    data = data.filter(a => {
+      switch(field) {
+        case 'carno':    return (a.CARNO||'').includes(keyword);
+        case 'carname':  return (a.CARNAME||'').includes(keyword);
+        case 'carowner': return (a.CAROWNER||'').includes(keyword);
+        case 'vendor':   return (a.VENDORS||'').includes(keyword);
+        case 'staff':    return (a.STAFF||'').includes(keyword);
+        default:
+          return (a.CARNO||'').includes(keyword) ||
+                 (a.CARNAME||'').includes(keyword) ||
+                 (a.CAROWNER||'').includes(keyword) ||
+                 (a.STAFF||'').includes(keyword);
+      }
+    });
+  }
+
+  // 페이지 사이즈
+  const pageSize = parseInt(document.getElementById('listPageSize')?.value || '20');
+  const total = data.length;
+  data = data.slice(0, pageSize);
+
+  document.getElementById('listCount').textContent = `총 ${total}건 (${data.length}개 표시)`;
+
   document.getElementById('auctionTblBody').innerHTML = data.length === 0
-    ? `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-m);font-size:var(--fs-xs)">등록된 입찰이 없습니다.</td></tr>`
+    ? `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text-m);font-size:var(--fs-xs)">등록된 입찰이 없습니다.</td></tr>`
     : data.map(a => {
         const bidCount = bidsData.filter(b => b.AUCTION_ID === a.ID).length;
         const vendorCount = parseVendors(a.VENDORS).length;
         return `<tr onclick="openDP('${a.ID}')">
           <td><span class="plate">${a.CARNO||''}</span></td>
+          <td class="td-m">${a.CAROWNER||'-'}</td>
           <td style="font-weight:500">${a.CARNAME||''}</td>
           <td class="td-m">${a.ACCTYPE||''}</td>
           <td class="td-m">${fmtDate(a.DEADLINE)}</td>
@@ -1408,13 +1452,17 @@ async function renderList() {
           <td class="td-m">${bidCount} / ${vendorCount}</td>
           <td class="td-m">${a.STAFF||''}</td>
           <td style="display:flex;gap:5px">
-  <button class="btn btn-g btn-sm" onclick="event.stopPropagation();openDP('${a.ID}')">상세</button>
-  ${currentUser?.role === 'master' ? `<button class="btn btn-err btn-sm" onclick="event.stopPropagation();deleteAuction('${a.ID}')">삭제</button>` : ''}
-</td>
+            <button class="btn btn-g btn-sm" onclick="event.stopPropagation();openDP('${a.ID}')">상세</button>
+            ${currentUser?.role === 'master' ? `<button class="btn btn-err btn-sm" onclick="event.stopPropagation();deleteAuction('${a.ID}')">삭제</button>` : ''}
+          </td>
         </tr>`;
       }).join('');
 }
-function filterList(v) { listSearch = v; renderList(); }
+function filterList(v) {
+  listSearch = v;
+  screenLoaded.list = false;
+  renderList();
+}
 
 
 // ══════ 신규 입찰 등록 ══════

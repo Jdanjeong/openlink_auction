@@ -2012,15 +2012,16 @@ async function openDP(aid) {
           </div>
           ${a.STATUS==='closed'&&sorted[0]?`<div style="margin-top:9px;padding:9px 12px;background:var(--color-s3b);border-radius:var(--radius-sm);font-size:var(--fs-sm);color:var(--color-secd);font-weight:700">낙찰: ${sorted[0].VENDOR_NAME} · ${Number(sorted[0].AMOUNT).toLocaleString()}원</div>`:''}
         `) : isStaff && a.STATUS === 'closed' ? `
-          <div style="border:1px solid var(--color-border);border-radius:var(--radius-sm);overflow:hidden">
-            ${staffBids.map((b,i)=>`<div class="bid-result-row">
-              <div class="bid-rank">${i+1}</div>
-              <div class="bid-amount">${b.VENDOR_NAME||''}</div>
-              <span class="badge badge-gray">${b.EVAL_TYPE||''}</span>
+           <div style="border:1px solid var(--color-border);border-radius:var(--radius-sm);overflow:hidden">
+            ${sorted.map((b,i)=>`<div class="bid-result-row">
+              <div class="bid-rank ${i===0?'first':''}">${i+1}</div>
+              <div class="bid-amount ${i===0?'first':''}">${Number(b.AMOUNT).toLocaleString()}원</div>
+              <div class="bid-company">${b.VENDOR_NAME||''}</div>
+              <span class="badge badge-gray" style="margin-left:4px;font-size:11px">${b.EVAL_TYPE||''}</span>
               <div class="bid-time">${b.SUBMITTED_AT||''}</div>
             </div>`).join('')}
           </div>
-          <div style="margin-top:8px;font-size:var(--fs-xs);color:var(--text-m)">입찰 금액은 마스터 권한에서만 열람 가능합니다.</div>
+          ${sorted[0] ? `<div style="margin-top:9px;padding:9px 12px;background:var(--color-s3b);border-radius:var(--radius-sm);font-size:var(--fs-sm);color:var(--color-secd);font-weight:700">낙찰: ${sorted[0].VENDOR_NAME} · ${Number(sorted[0].AMOUNT).toLocaleString()}원</div>` : ''}
         ` : `<div class="blind-box">입찰 금액은 마스터 권한에서만 열람 가능합니다.<br>현재 <strong>${bidCount}개 업체</strong>가 투찰하였습니다.${isStaff&&a.STATUS==='ongoing'?'<br>마감 후 참여업체 리스트를 확인할 수 있습니다.':''}</div>`}
       </div>
       <div class="dp-sec">

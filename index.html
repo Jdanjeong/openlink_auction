@@ -425,7 +425,7 @@ a{text-decoration:none;color:inherit;}
     <div class="scroll-area">
       <div class="tbl-wrap" style="border-radius:0;border:none">
         <table class="tbl">
-          <thead><tr><th>차량번호</th><th>위탁사</th><th>차종</th><th>사고유형</th><th>마감일시</th><th>상태</th><th>참여/발송</th><th>담당자</th><th></th></tr></thead>
+          <thead><tr><th>차량번호</th><th>위탁사</th><th>차종</th><th>사고유형</th><th>등록일시</th><th>마감일시</th><th>상태</th><th>참여/발송</th><th>담당자</th><th></th></tr></thead>
           <tbody id="auctionTblBody"></tbody>
         </table>
       </div>
@@ -1310,7 +1310,7 @@ function fmtDate(val) {
   return d.toLocaleString('ko-KR', {
     year:'numeric', month:'2-digit', day:'2-digit',
     hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Asia/Seoul'
-  }).replace(/\. /g,'-').replace('.','-').replace(', ',' ').slice(0,16);
+  }).replace(/\./g,'').replace(/  /,' ').trim().slice(0,15);
 }
 
 // ══ vendors 파싱 헬퍼 ══
@@ -1339,6 +1339,7 @@ async function renderDash(tab) {
       return `<tr onclick="openDP('${a.ID}')">
         <td><span class="plate">${a.CARNO||''}</span></td>
         <td style="font-weight:500">${a.CARNAME||''}</td>
+        <td class="td-m">${fmtDate(a.CREATED_AT)}</td>
         <td class="td-m">${fmtDate(a.DEADLINE)}</td>
         <td>${statusBadge(a.STATUS)}</td>
         <td class="td-m">${bidCount} / ${vendorCount}개</td>
@@ -1356,7 +1357,7 @@ async function renderDash(tab) {
       <div style="font-size:var(--fs-xs);font-weight:700;color:var(--text-m);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">최근 입찰 현황</div>
       ${auctions.length === 0
         ? '<div class="empty-state"><h4>등록된 입찰 없음</h4><p>신규 입찰을 등록하세요.</p></div>'
-        : `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>차량번호</th><th>차종</th><th>마감일시</th><th>상태</th><th>참여/발송</th><th>담당자</th></tr></thead><tbody>${rows}</tbody></table></div>`
+        : `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>차량번호</th><th>차종</th><th>등록일시</th><th>마감일시</th><th>상태</th><th>참여/발송</th><th>담당자</th></tr></thead><tbody>${rows}</tbody></table></div>`
       }`;
   } else {
     if (!ongoing.length) {
@@ -1438,7 +1439,7 @@ async function renderList() {
   document.getElementById('listCount').textContent = `총 ${total}건 (${data.length}개 표시)`;
 
   document.getElementById('auctionTblBody').innerHTML = data.length === 0
-    ? `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text-m);font-size:var(--fs-xs)">등록된 입찰이 없습니다.</td></tr>`
+    ? `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-m);font-size:var(--fs-xs)">등록된 입찰이 없습니다.</td></tr>`
     : data.map(a => {
         const bidCount = bidsData.filter(b => b.AUCTION_ID === a.ID).length;
         const vendorCount = parseVendors(a.VENDORS).length;
@@ -1447,6 +1448,7 @@ async function renderList() {
           <td class="td-m">${a.CAROWNER||'-'}</td>
           <td style="font-weight:500">${a.CARNAME||''}</td>
           <td class="td-m">${a.ACCTYPE||''}</td>
+          <td class="td-m">${fmtDate(a.CREATED_AT)}</td>
           <td class="td-m">${fmtDate(a.DEADLINE)}</td>
           <td>${statusBadge(a.STATUS)}</td>
           <td class="td-m">${bidCount} / ${vendorCount}</td>
@@ -1747,39 +1749,87 @@ function mockCreateAuction(data) {
 
 // ══════ 낙찰 결과 (마스터) ══════
 async function renderResult() {
-  if (currentUser?.role !== 'master') {
-    document.getElementById('resultContent').innerHTML = '<div class="empty-state"><h4>접근 권한 없음</h4><p>마스터 계정에서만 열람 가능합니다.</p></div>';
+  if (!['master','staff'].includes(currentUser?.role)) {
+    document.getElementById('resultContent').innerHTML = '<div class="empty-state"><h4>접근 권한 없음</h4><p>마스터/담당자 계정에서만 열람 가능합니다.</p></div>';
     return;
   }
   const auctions = await getAuctions();
   const closed = auctions.filter(a => a.STATUS === 'closed');
-  document.getElementById('resultContent').innerHTML = closed.length ? await Promise.all(closed.map(async a => {
-    const bids = await getBids(a.ID);
+
+  if (!closed.length) {
+    document.getElementById('resultContent').innerHTML = '<div class="empty-state"><h4>마감된 입찰 없음</h4></div>';
+    return;
+  }
+
+  const isMaster = currentUser?.role === 'master';
+
+  const cards = await Promise.all(closed.map(async a => {
+    const bids = isMaster ? await getBids(a.ID) : [];
     const sorted = [...bids].sort((x,y) => Number(y.AMOUNT) - Number(x.AMOUNT));
     const winner = sorted[0];
-    return `<div class="card" style="margin-bottom:18px">
+    const bidCount = bids.length;
+    const vendorCount = parseVendors(a.VENDORS).length;
+
+    return `<div class="card" style="margin-bottom:14px;cursor:pointer" onclick="openDP('${a.ID}')">
       <div class="card-head">
-        <div style="display:flex;align-items:center;gap:8px"><span class="plate">${a.CARNO}</span><span style="font-size:var(--fs-sm);font-weight:600">${a.CARNAME}</span>${statusBadge(a.STATUS)}</div>
-        <span style="font-size:var(--fs-xs);color:var(--text-m)">마감 ${(a.DEADLINE||'').replace('T',' ')}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="plate">${a.CARNO}</span>
+          <span style="font-size:var(--fs-sm);font-weight:600">${a.CARNAME}</span>
+          <span style="font-size:var(--fs-xs);color:var(--text-m)">${a.YEAR||''}</span>
+          ${statusBadge(a.STATUS)}
+        </div>
+        <span style="font-size:var(--fs-xs);color:var(--text-m)">마감 ${fmtDate(a.DEADLINE)}</span>
       </div>
       <div class="card-body" style="padding:0">
-        ${winner ? `<div style="padding:14px 18px;border-bottom:1px solid var(--color-border);background:var(--color-s3b);display:flex;align-items:center;gap:12px">
-          <span style="font-size:var(--fs-xs);font-weight:700;color:var(--color-secd)">[낙찰] 낙찰</span>
-          <span style="font-size:17px;font-weight:700;color:var(--color-p)">${Number(winner.AMOUNT).toLocaleString()}원</span>
-          <span style="font-size:var(--fs-sm);color:var(--text-s)">${winner.VENDOR_NAME}</span>
-          <span class="badge badge-gray">${winner.EVAL_TYPE||''}</span>
-          <span style="font-size:var(--fs-xs);color:var(--text-m);margin-left:auto;font-family:var(--font-mono)">${winner.SUBMITTED_AT}</span>
-        </div>` : ''}
-        ${sorted.map((b,i) => `<div class="bid-result-row">
-          <div class="bid-rank ${i===0?'first':''}">${i+1}</div>
-          <div class="bid-amount ${i===0?'first':''}">${Number(b.AMOUNT).toLocaleString()}원</div>
-          <div class="bid-company">${b.VENDOR_NAME}</div>
-          <span class="badge badge-gray" style="margin-left:4px">${b.EVAL_TYPE||''}</span>
-          <div class="bid-time">${b.SUBMITTED_AT}</div>
-        </div>`).join('')}
+        <!-- 차량 기본정보 -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid var(--color-border)">
+          <div style="padding:10px 16px;border-right:1px solid var(--color-border)">
+            <div style="font-size:var(--fs-xs);color:var(--text-m);margin-bottom:2px">위탁사</div>
+            <div style="font-size:var(--fs-sm);font-weight:600">${a.CAROWNER||'-'}</div>
+          </div>
+          <div style="padding:10px 16px;border-right:1px solid var(--color-border)">
+            <div style="font-size:var(--fs-xs);color:var(--text-m);margin-bottom:2px">사고유형</div>
+            <div style="font-size:var(--fs-sm);font-weight:600">${a.ACCTYPE||'-'}</div>
+          </div>
+          <div style="padding:10px 16px;border-right:1px solid var(--color-border)">
+            <div style="font-size:var(--fs-xs);color:var(--text-m);margin-bottom:2px">보관장소</div>
+            <div style="font-size:var(--fs-sm);font-weight:600">${a.LOCATION||'-'}</div>
+          </div>
+          <div style="padding:10px 16px">
+            <div style="font-size:var(--fs-xs);color:var(--text-m);margin-bottom:2px">투찰 / 발송</div>
+            <div style="font-size:var(--fs-sm);font-weight:600">${bidCount} / ${vendorCount}개</div>
+          </div>
+        </div>
+        <!-- 낙찰 정보 (마스터만) -->
+        ${isMaster ? `
+          ${winner ? `
+          <div style="padding:12px 16px;border-bottom:1px solid var(--color-border);background:var(--color-s3b);display:flex;align-items:center;gap:12px">
+            <span style="font-size:var(--fs-xs);font-weight:700;color:var(--color-secd)">🏆 낙찰</span>
+            <span style="font-size:17px;font-weight:700;color:var(--color-p)">${Number(winner.AMOUNT).toLocaleString()}원</span>
+            <span style="font-size:var(--fs-sm);color:var(--text-s)">${winner.VENDOR_NAME}</span>
+            <span class="badge badge-gray">${winner.EVAL_TYPE||''}</span>
+            <span style="font-size:var(--fs-xs);color:var(--text-m);margin-left:auto;font-family:var(--font-mono)">${winner.SUBMITTED_AT}</span>
+          </div>` : '<div style="padding:12px 16px;font-size:var(--fs-sm);color:var(--text-m);border-bottom:1px solid var(--color-border)">투찰 없음</div>'}
+          ${sorted.map((b,i) => `<div class="bid-result-row">
+            <div class="bid-rank ${i===0?'first':''}">${i+1}</div>
+            <div class="bid-amount ${i===0?'first':''}">${Number(b.AMOUNT).toLocaleString()}원</div>
+            <div class="bid-company">${b.VENDOR_NAME}</div>
+            <span class="badge badge-gray" style="margin-left:4px">${b.EVAL_TYPE||''}</span>
+            <div class="bid-time">${b.SUBMITTED_AT}</div>
+          </div>`).join('')}
+        ` : `
+          <div style="padding:12px 16px;font-size:var(--fs-sm);color:var(--text-m)">
+            입찰 금액은 마스터 권한에서만 열람 가능합니다.
+          </div>
+        `}
+        <div style="padding:8px 16px;background:var(--color-s1);border-top:1px solid var(--color-border);font-size:var(--fs-xs);color:var(--text-m);text-align:right">
+          클릭하면 상세 정보를 볼 수 있습니다 →
+        </div>
       </div>
     </div>`;
-  })).then(html => html.join('')) : '<div class="empty-state"><h4>마감된 입찰 없음</h4></div>';
+  }));
+
+  document.getElementById('resultContent').innerHTML = cards.join('');
 }
 
 // ══ ACTIVE 값 정규화 헬퍼 (boolean/문자열 모두 처리) ══

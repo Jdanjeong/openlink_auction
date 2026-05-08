@@ -1024,7 +1024,7 @@ async function renderVendorBidPage(vendorId, auctionId) {
             <span>본인은 상기 차량이 <strong>전손(Total Loss)</strong>으로 처리됨에 동의하며, 위 입찰금액으로 잔존물 매각에 참여합니다. 제출 후 취소 및 수정이 불가함을 확인합니다.</span>
           </label>
 
-          <button class="btn btn-p btn-lg" style="width:100%;margin-top:20px;border-radius:var(--radius)" onclick="submitBidEval('${auctionId}','${vendorId}','${vendor?.NAME||vendorId}')">입찰 평가서 제출</button>
+          <button class="btn btn-p btn-lg" style="width:100%;margin-top:20px;border-radius:var(--radius);justify-content:center;text-align:center" onclick="submitBidEval('${auctionId}','${vendorId}','${vendor?.NAME||vendorId}')">입찰 평가서 제출</button>
         </div>
       </div>`}
     `;
@@ -1073,8 +1073,10 @@ async function submitBidEval(auctionId, vendorId, vendorName) {
     const data = { auctionId, vendorId, vendorName, amount, evalType, evalNote: `부대비용: ${surcharge}`, agreed:'Y' };
     const res = await apiPost({ action:'submitBid', data });
     if (!res.ok) { toast(res.error || '제출 실패', 'err'); return; }
-    toast('입찰 평가서가 성공적으로 제출되었습니다.', 'ok');
-    await renderVendorBidPage(vendorId, auctionId);
+    // 완료 팝업
+alert('✅ 접수가 완료되었습니다!\n\n투찰 금액이 정상적으로 접수되었습니다.\n결과는 마감 후 담당자가 통보합니다.');
+// 입찰 목록으로 이동
+await renderVendorDirect(vendorId);
   } catch(e) {
     toast('제출 중 오류가 발생했습니다.', 'err');
   } finally { setLoading(false); }

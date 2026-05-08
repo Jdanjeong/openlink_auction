@@ -866,7 +866,10 @@ async function renderVendorDirect(vendorId) {
   const myBids = await getMyBids(vendorId);
 
   const el = document.getElementById('bidBody');
-  el.innerHTML = `
+el.innerHTML = `
+  <div style="margin-bottom:16px">
+    <button class="btn btn-g btn-sm" onclick="renderVendorDirect('${vendorId}')">← 입찰 목록으로</button>
+  </div>
     <div style="margin-bottom:20px">
       <div style="font-size:22px;font-weight:800;color:var(--text-p);margin-bottom:5px;letter-spacing:-.5px">안녕하세요, ${vendor?.NAME || vendorId}님</div>
       <div style="font-size:15px;color:var(--text-s)">참여 가능한 입찰 건을 확인하고 견적을 제출해 주세요.</div>
@@ -1412,63 +1415,83 @@ async function handleFilesWithParse(files) {
 async function showResultPage() {
   const el = document.getElementById('bidBody');
   el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-m);font-size:var(--fs-sm)">결과 조회 중...</div>`;
+
   try {
+    const vendorId = currentUser?.vendorId;
     const [myBids, auctions] = await Promise.all([
-      getMyBids(currentUser?.vendorId),
+      getMyBids(vendorId),
       getAuctions(),
     ]);
+
+    let html = `
+      <div style="margin-bottom:16px">
+        <button class="btn btn-g btn-sm" onclick="renderVendorDirect('${vendorId}')">← 입찰 목록으로</button>
+      </div>
+      <div style="margin-bottom:20px">
+        <div style="font-size:17px;font-weight:700;color:var(--text-p);margin-bottom:4px">낙찰 결과 확인</div>
+        <div style="font-size:var(--fs-sm);color:var(--text-s)">참여한 입찰 건의 결과입니다. 타 업체 금액은 비공개입니다.</div>
+      </div>
+    `;
+
     if (!myBids.length) {
-      el.innerHTML = `<div style="margin-bottom:20px"><div style="font-size:17px;font-weight:700;margin-bottom:4px">낙찰 결과 확인</div><div style="font-size:var(--fs-sm);color:var(--text-s)">참여한 입찰이 없습니다.</div></div>`;
+      html += `<div class="bid-card"><div class="bid-card-body" style="text-align:center;padding:40px;color:var(--text-m)">참여한 입찰이 없습니다.</div></div>`;
+      el.innerHTML = html;
       return;
     }
+
     const rows = await Promise.all(myBids.map(async b => {
       const auction = auctions.find(a => a.ID === b.AUCTION_ID) || {};
       const isClosed = auction.STATUS === 'closed';
       let resultBadge = '<span class="badge badge-warn">진행중</span>';
       let resultText  = '마감 후 결과 확인 가능';
+
       if (isClosed) {
         try {
-          const res = await apiPost({ action:'getBidResult', auctionId:b.AUCTION_ID, vendorId:currentUser.vendorId });
+          const res = await apiPost({
+            action: 'getBidResult',
+            auctionId: b.AUCTION_ID,
+            vendorId,
+          });
           if (res.ok && res.data) {
             const d = res.data;
             if (d.status === 'won') {
-              resultBadge = '<span class="badge badge-ok" style="font-size:13px;height:24px;padding:0 10px">낙찰</span>';
+              resultBadge = '<span class="badge badge-ok" style="font-size:13px;height:24px;padding:0 10px">🏆 낙찰</span>';
               resultText  = `${d.totalBids}개 업체 중 최고가 낙찰`;
             } else if (d.status === 'lost') {
               resultBadge = '<span class="badge badge-gray" style="font-size:13px;height:24px;padding:0 10px">유찰</span>';
               resultText  = `${d.totalBids}개 업체 중 ${d.myRank}위`;
             }
           }
-        } catch(e) { resultText = '결과 조회 실패'; }
+        } catch(e) {
+          resultText = '결과 조회 실패';
+        }
       }
+
       return `
         <div class="bid-card" style="margin-bottom:14px">
           <div class="bid-card-head">
             <div style="display:flex;align-items:center;gap:8px">
-              <span class="plate">${b.CARNO||auction.CARNO||''}</span>
-              <span style="font-weight:600">${b.CARNAME||auction.CARNAME||''}</span>
+              <span class="plate">${b.CARNO || auction.CARNO || ''}</span>
+              <span style="font-weight:600">${b.CARNAME || auction.CARNAME || ''}</span>
             </div>
             ${resultBadge}
           </div>
           <div class="bid-card-body">
             <div class="veh-grid" style="margin-bottom:0">
-              <div class="veh-item"><label>내 투찰금액</label><value style="color:var(--color-p);font-size:16px">${Number(b.AMOUNT).toLocaleString()}원</value></div>
-              <div class="veh-item"><label>투찰일시</label><value style="font-size:var(--fs-sm)">${b.SUBMITTED_AT||''}</value></div>
-              <div class="veh-item"><label>평가구분</label><value>${b.EVAL_TYPE||'-'}</value></div>
-              <div class="veh-item"><label>결과</label><value>${resultText}</value></div>
+              <div class="veh-item"><label>내 투찰금액</label><value style="color:var(--color-p);font-size:16px;font-weight:700">${Number(b.AMOUNT).toLocaleString()}원</value></div>
+              <div class="veh-item"><label>투찰일시</label><value style="font-size:var(--fs-sm)">${b.SUBMITTED_AT || ''}</value></div>
+              <div class="veh-item"><label>평가구분</label><value>${b.EVAL_TYPE || '-'}</value></div>
+              <div class="veh-item"><label>결과</label><value style="font-weight:600">${resultText}</value></div>
             </div>
           </div>
         </div>`;
     }));
-    el.innerHTML = `
-      <div style="margin-bottom:20px">
-        <div style="font-size:17px;font-weight:700;color:var(--text-p);margin-bottom:4px">낙찰 결과 확인</div>
-        <div style="font-size:var(--fs-sm);color:var(--text-s)">참여한 입찰 건의 결과를 확인합니다. 타 업체 금액은 비공개입니다.</div>
-      </div>
-      ${rows.join('')}
-      <button class="btn btn-g" style="margin-top:8px" onclick="renderVendorDirect('${currentUser?.vendorId}')">← 입찰 목록으로</button>`;
+
+    html += rows.join('');
+    el.innerHTML = html;
+
   } catch(e) {
-    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--color-err)">오류가 발생했습니다.</div>`;
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--color-err)">오류가 발생했습니다: ${e.message}</div>`;
   }
 }
 

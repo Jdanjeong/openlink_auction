@@ -1329,8 +1329,13 @@ async function getBids(auctionId) {
   catch(e) { return MOCK_BIDS.filter(b => b.AUCTION_ID === auctionId); }
 }
 async function getBidsForVendor(auctionId, vendorId) {
-  try { const r = await apiGet({action:'getBids',auctionId,role:'vendor'}); return r.ok && r.data ? r.data : []; }
-  catch(e) { return MOCK_BIDS.filter(b => b.AUCTION_ID === auctionId); }
+  try {
+    const r = await apiGet({action:'getMyBids', vendorId});
+    if (r.ok && r.data) return r.data.filter(b => b.AUCTION_ID === auctionId);
+    return [];
+  } catch(e) {
+    return MOCK_BIDS.filter(b => b.AUCTION_ID === auctionId && b.VENDOR_ID === vendorId);
+  }
 }
 async function getMyBids(vendorId) {
   try { const r = await apiGet({action:'getMyBids',vendorId}); return r.ok ? r.data : []; }
@@ -1353,12 +1358,15 @@ async function getBidsAll() {
 // ══ 날짜 포맷 헬퍼 ══
 function fmtDate(val) {
   if (!val) return '-';
-  const d = new Date(val);
-  if (isNaN(d.getTime())) return String(val).replace('T',' ').slice(0,16);
-  return d.toLocaleString('ko-KR', {
-    year:'numeric', month:'2-digit', day:'2-digit',
-    hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Asia/Seoul'
-  }).replace(/\./g,'').replace(/  /,' ').trim().slice(0,15);
+  const s = String(val).replace('T',' ').trim();
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return s.slice(0,16);
+  const yyyy = d.getFullYear();
+  const mm   = String(d.getMonth()+1).padStart(2,'0');
+  const dd   = String(d.getDate()).padStart(2,'0');
+  const hh   = String(d.getHours()).padStart(2,'0');
+  const mi   = String(d.getMinutes()).padStart(2,'0');
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
 }
 
 // ══ vendors 파싱 헬퍼 ══

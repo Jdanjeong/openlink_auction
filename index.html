@@ -1085,6 +1085,7 @@ const isDisabled = isClosed || alreadyBid;
   onclick="submitBidEval('${auctionId}','${vendorId}','${vendor?.NAME||vendorId}')"
   ${isDisabled ? 'disabled' : ''}>
   ${alreadyBid ? '✓ 이미 투찰하셨습니다' : isClosed ? '입찰 마감됨' : '입찰 평가서 제출'}
+</button>
         </div>
       </div>`}
     `;
@@ -2072,7 +2073,8 @@ function renderAttachments(photosVal, docsVal) {
     html += '</div>';
   }
   if (docs.length) {
-    html += `<div style="margin-bottom:8px">
+    docs.forEach((d, i) => {
+      html += `<div style="margin-bottom:8px">
   <a href="${d.viewUrl}" target="_blank" rel="noopener"
     style="display:flex;align-items:center;gap:10px;padding:12px 16px;
     background:var(--color-bg);border:1px solid var(--color-border);

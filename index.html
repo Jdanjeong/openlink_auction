@@ -1078,7 +1078,6 @@ const isDisabled = isClosed || alreadyBid;
   onclick="submitBidEval('${auctionId}','${vendorId}','${vendor?.NAME||vendorId}')"
   ${isDisabled ? 'disabled' : ''}>
   ${alreadyBid ? '✓ 이미 투찰하셨습니다' : isClosed ? '입찰 마감됨' : '입찰 평가서 제출'}
-</button>;text-align:center" onclick="submitBidEval('${auctionId}','${vendorId}','${vendor?.NAME||vendorId}')">입찰 평가서 제출</button>
         </div>
       </div>`}
     `;
@@ -1476,7 +1475,7 @@ async function showResultPage() {
 
     let html = `
       <div style="margin-bottom:16px">
-        <button class="btn btn-g btn-sm" onclick="renderVendorDirect('${vendorId}')">← 입찰 목록으로</button>
+        <button class="btn btn-g btn-sm" onclick="renderVendorDirect(currentUser?.vendorId)">← 입찰 목록으로</button>
       </div>
       <div style="margin-bottom:20px">
         <div style="font-size:17px;font-weight:700;color:var(--text-p);margin-bottom:4px">낙찰 결과 확인</div>

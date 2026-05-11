@@ -454,7 +454,10 @@ a{text-decoration:none;color:inherit;}
                 <div class="ff"><label>연식</label><input type="text" id="f-year" placeholder="예) 2024년식"></div>
                 <div class="ff"><label>연료</label><select id="f-fuel"><option>디젤</option><option>가솔린</option><option>전기</option><option>LPG</option><option>하이브리드</option></select></div>
                 <div class="ff"><label>사고유형</label><select id="f-acctype"><option>충돌사고</option><option>침수</option><option>화재</option><option>기타전손</option></select></div>
+<div class="ff"><label>과실여부</label><select id="f-fault"><option>자차 100%</option><option>쌍방 (자차 과실 多)</option><option>쌍방 (상대 과실 多)</option><option>상대차 100%</option><option>단독사고</option><option>미확정</option></select></div>
                 <div class="ff"><label>보관장소</label><input type="text" id="f-location" placeholder="예) 서울 송파구 신천동"></div>
+<div class="ff"><label>보관장소 연락처</label><input type="text" id="f-location-tel" placeholder="예) 010-0000-0000"></div>
+<div class="ff"><label>보관료 (원/일)</label><input type="text" id="f-storage-fee" placeholder="예) 30,000"></div>
                 <div class="ff span2"><label>비고 / 특이사항</label><textarea id="f-note" rows="2" placeholder="손해 상황, 특이사항 등 업체에 전달할 내용"></textarea></div>
               </div>
               <div class="sec-label">손해 정보</div>
@@ -1529,11 +1532,11 @@ async function renderNewForm() {
   uploadedPhotos = []; uploadedDocs = [];
   document.getElementById('photoList').innerHTML = '';
   document.getElementById('docList').innerHTML = '';
-  ['f-carowner','f-carno','f-carname','f-year','f-note','f-damage','f-evalorg','f-minbid'].forEach(id => {
+  ['f-carowner','f-carno','f-carname','f-year','f-note','f-damage','f-evalorg','f-minbid','f-location-tel','f-storage-fee'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   // 마감일 기본값: 등록일 +3일
-  const d = new Date(); d.setDate(d.getDate()+3); d.setHours(18,0,0,0);
+  const d = new Date(); d.setDate(d.getDate()+1); d.setHours(18,0,0,0);
   document.getElementById('f-deadline').value = d.toISOString().slice(0,16);
   // 업체 체크리스트 - Sheets에서 로딩
   document.getElementById('vendorCheckList').innerHTML = '<div style="font-size:var(--fs-xs);color:var(--text-m);padding:8px 0">업체 목록 로딩 중...</div>';
@@ -1719,7 +1722,10 @@ async function submitNewAuction() {
       year:     document.getElementById('f-year').value||'',
       fuel:     document.getElementById('f-fuel').value,
       acctype:  document.getElementById('f-acctype').value,
-      location: document.getElementById('f-location').value,
+      location:    document.getElementById('f-location').value,
+locationTel: document.getElementById('f-location-tel').value || '',
+storageFee:  document.getElementById('f-storage-fee').value || '',
+fault:       document.getElementById('f-fault').value,
       damage:   parseInt((document.getElementById('f-damage').value||'0').replace(/,/g,''))||0,
       evalorg:  document.getElementById('f-evalorg').value,
       note:     document.getElementById('f-note').value,

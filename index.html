@@ -68,7 +68,7 @@ a{text-decoration:none;color:inherit;}
 
 /* ── 앱 셸 ── */
 .shell{display:grid;grid-template-columns:var(--w-sidebar) 1fr;grid-template-rows:var(--h-header) 36px 1fr;grid-template-areas:"ci hd""ci tb""nb mn";height:100vh;overflow:hidden;}
-.ci-brand{grid-area:ci;background:var(--color-p);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:0 12px;position:sticky;top:0;z-index:31;}
+.ci-brand{grid-area:ci;background:var(--color-p);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 20px;position:sticky;top:0;z-index:31;}
 .hd{grid-area:hd;background:var(--color-bg);display:flex;align-items:center;justify-content:flex-end;padding:0 18px;border-bottom:1px solid var(--color-border);position:sticky;top:0;z-index:30;}
 .hd-tabbar{grid-area:tb;display:flex;align-items:flex-end;background:var(--color-s1);padding:5px 12px 0;gap:2px;overflow-x:auto;overflow-y:hidden;border-bottom:1px solid var(--color-border);border-left:1px solid var(--color-border);}
 .nb{grid-area:nb;overflow-y:auto;background:var(--color-s1);padding:14px 16px 48px;border-right:1px solid var(--color-border);}
@@ -335,9 +335,10 @@ a{text-decoration:none;color:inherit;}
     <!-- CI 브랜드 (사이드바 전체 높이) -->
     <div class="ci-brand">
       <img src="https://taksong-driver.openmile.kr/openlink.png" class="hd-logo" alt="오픈링크"
+        style="height:18px;"
         onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <div style="display:none;font-size:17px;font-weight:800;color:#fff;letter-spacing:-.3px">오픈링크</div>
-      <span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:700;letter-spacing:.08em;text-align:center;white-space:nowrap">경쟁입찰시스템</span>
+      <div style="display:none;font-size:12px;font-weight:800;color:#fff;letter-spacing:-.3px">오픈링크</div>
+      <span style="font-size:14px;color:rgba(255,255,255,.9);font-weight:700;letter-spacing:.04em;text-align:center;white-space:nowrap;margin-top:2px">경쟁입찰시스템</span>
     </div>
 
     <!-- 헤더 (우측 상단) -->
